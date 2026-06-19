@@ -9,47 +9,55 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
+import { useTheme } from '../theme/ThemeContext';
 import { signIn } from '../services/auth';
 
 interface Props {
   navigation: any;
 }
 
+const FORM_MAX_WIDTH = 400;
+
 export default function LoginScreen({ navigation }: Props) {
+  const { colors, isDark } = useTheme();
+  const { width } = useWindowDimensions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const isWeb = Platform.OS === 'web';
+  const formWidth = isWeb ? Math.min(width - 64, FORM_MAX_WIDTH) : width - 64;
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
       Alert.alert('Missing fields', 'Please enter both email and password.');
       return;
     }
-
     setLoading(true);
-    const { user, error } = await signIn(email.trim(), password);
+    const { error } = await signIn(email.trim(), password);
     setLoading(false);
-
     if (error) {
       Alert.alert('Login failed', error.message);
     }
-    // onAuthStateChanged in AuthContext will automatically navigate to Dashboard
   };
+
+  const s = themedStyles(colors);
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={s.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.inner}>
-        <Text style={styles.brand}>PISILIST</Text>
-        <Text style={styles.tagline}>"Simplicity in Team Tasks"</Text>
+      <View style={[s.inner, { width: formWidth, alignSelf: 'center' }]}>
+        <Text style={s.brand}>PISILIST</Text>
+        <Text style={s.tagline}>"Simplicity in Team Tasks"</Text>
 
         <TextInput
-          style={styles.input}
+          style={s.input}
           placeholder="Email Address"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -58,16 +66,16 @@ export default function LoginScreen({ navigation }: Props) {
         />
 
         <TextInput
-          style={styles.input}
+          style={s.input}
           placeholder="Password"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[s.button, loading && s.buttonDisabled]}
           onPress={handleLogin}
           disabled={loading}
           activeOpacity={0.7}
@@ -75,76 +83,72 @@ export default function LoginScreen({ navigation }: Props) {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>LOG IN</Text>
+            <Text style={s.buttonText}>LOG IN</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-          <Text style={styles.link}>Don't have an account? Sign Up</Text>
+          <Text style={s.link}>Don't have an account? Sign Up</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
-          <Text style={styles.link}>Forgot Password? Reset Here</Text>
+          <Text style={s.link}>Forgot Password? Reset Here</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  inner: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  brand: {
-    fontSize: 36,
-    fontWeight: '700',
-    textAlign: 'center',
-    color: '#1a1a2e',
-    letterSpacing: 2,
-  },
-  tagline: {
-    fontSize: 14,
-    textAlign: 'center',
-    color: '#666',
-    marginBottom: 40,
-    fontStyle: 'italic',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 14,
-    color: '#1a1a2e',
-  },
-  button: {
-    backgroundColor: '#1a73e8',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 6,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  link: {
-    color: '#1a73e8',
-    textAlign: 'center',
-    fontSize: 14,
-    marginTop: 12,
-  },
-});
+const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    inner: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: 32,
+    },
+    brand: {
+      fontSize: 36,
+      fontWeight: '700',
+      textAlign: 'center',
+      color: colors.text,
+      letterSpacing: 2,
+    },
+    tagline: {
+      fontSize: 14,
+      textAlign: 'center',
+      color: colors.subtext,
+      marginBottom: 40,
+      fontStyle: 'italic',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 16,
+      marginBottom: 14,
+      color: colors.text,
+      backgroundColor: colors.inputBg,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 14,
+      alignItems: 'center',
+      marginBottom: 20,
+      marginTop: 6,
+    },
+    buttonDisabled: { opacity: 0.7 },
+    buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+    link: {
+      color: colors.primary,
+      textAlign: 'center',
+      fontSize: 14,
+      marginTop: 12,
+    },
+  });

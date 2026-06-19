@@ -1,5 +1,57 @@
 # Report — pisilist
 
+## [2026-06-19] Job: UI Overhaul — Dark Mode + Responsive Layout + Platform DateTimePicker
+
+**Status:** ✅ Success
+**Summary:** Implemented dark mode theme system, responsive web/mobile layouts with adaptive card grid, and platform-aware DateTimePicker that uses HTML5 inputs on web.
+
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `src/theme/colors.ts` | `AppColors` interface + `lightColors` / `darkColors` palettes (16 color tokens each) |
+| `src/theme/ThemeContext.tsx` | `ThemeProvider` with `useColorScheme()`, AsyncStorage persistence, `useTheme()` hook |
+| `src/components/DateTimePicker.tsx` | Platform-aware: native spinner on Android/iOS, HTML5 `<input type="date">` + `<input type="time">` on web |
+| `src/__tests__/__mocks__/async-storage.ts` | Jest mock for `@react-native-async-storage/async-storage` |
+
+### Modified Files (9)
+
+| File | Changes |
+|------|---------|
+| `App.tsx` | Wrapped app tree with `ThemeProvider` |
+| `jest.config.js` | Added AsyncStorage mock to `moduleNameMapper` |
+| `src/components/CardPreview.tsx` | Uses `useTheme()` colors, accepts `cardWidth` prop (no more static `Dimensions.get`) |
+| `src/components/ReminderModal.tsx` | Theme colors + responsive sheet + web/native DateTimePicker split |
+| `src/components/AssigneePicker.tsx` | Theme colors + responsive bottom sheet width |
+| `src/screens/DashboardScreen.tsx` | Theme colors + responsive columns (2 mobile, 3 tablet 768px+, 4 desktop 1200px+) + 1200px max-width |
+| `src/screens/CardDetailScreen.tsx` | Theme colors + 768px max-width centering on web |
+| `src/screens/LoginScreen.tsx` | Theme colors + 400px form max-width, centered |
+| `src/screens/SignUpScreen.tsx` | Theme colors + 400px form max-width, centered |
+| `src/screens/ResetPasswordScreen.tsx` | Theme colors + 400px form max-width, centered |
+| `src/screens/InvitationsScreen.tsx` | Theme colors + 600px max-width, centered |
+
+### Dependencies Added
+- `@react-native-async-storage/async-storage` 2.2.0 (theme preference persistence)
+
+### Dark Mode
+- Defaults to system preference via `useColorScheme()`
+- User can toggle in future settings screen
+- Preference persisted to AsyncStorage
+
+### Responsive Layout
+- All screens use `useWindowDimensions()` (reactive resizing)
+- Web: content capped at sensible max-widths, centered
+- Dashboard card grid: adapts 2-4 columns based on screen size
+- Modals: capped at 420-480px even on large screens
+
+### Test Results
+All 55 tests pass (9 suites). No regressions.
+
+### Errors
+None.
+
+---
+
 ## [2026-06-19] Job: Clean Remaining shadow* Deprecation Warnings
 
 **Status:** ✅ Success

@@ -5,12 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  FlatList,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
-import DateTimePicker, {
-  DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
+import { useTheme } from '../theme/ThemeContext';
+import DateTimePicker from './DateTimePicker';
 import type { Reminder } from '../types';
 
 interface Props {
@@ -30,27 +29,14 @@ export default function ReminderModal({
   onAdd,
   onRemove,
 }: Props) {
+  const { colors } = useTheme();
+  const { width } = useWindowDimensions();
   const [pickerDate, setPickerDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
 
-  const handleDateChange = (_event: DateTimePickerEvent, date?: Date) => {
-    // On Android, the picker auto-dismisses; on iOS it stays open
-    if (Platform.OS === 'android') {
-      setShowPicker(false);
-      if (date && _event.type === 'set') {
-        setPickerDate(date);
-        onAdd(date);
-      }
-    } else {
-      if (date) setPickerDate(date);
-    }
-  };
-
   const handleSetReminder = () => {
     if (pickerDate <= new Date()) {
-      // future date required
-      const future = new Date(Date.now() + 3600000); // 1 hour from now
-      onAdd(future);
+      onAdd(new Date(Date.now() + 3600000)); // 1 hour from now
     } else {
       onAdd(pickerDate);
     }
@@ -70,6 +56,10 @@ export default function ReminderModal({
     return `${dateStr} at ${timeStr}`;
   };
 
+  const sheetMaxWidth = Math.min(width * 0.88, 480);
+
+  const s = themedStyles(colors, sheetMaxWidth);
+
   return (
     <Modal
       visible={visible}
@@ -78,36 +68,36 @@ export default function ReminderModal({
       onRequestClose={onClose}
     >
       <TouchableOpacity
-        style={styles.overlay}
+        style={s.overlay}
         activeOpacity={1}
         onPress={onClose}
       >
-        <TouchableOpacity style={styles.sheet} activeOpacity={1}>
+        <TouchableOpacity style={s.sheet} activeOpacity={1}>
           {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>
+          <View style={s.header}>
+            <Text style={s.title}>
               Set Reminder for{'\n'}"{taskText}"
             </Text>
             <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
-              <Text style={styles.closeBtn}>✕</Text>
+              <Text style={s.closeBtn}>✕</Text>
             </TouchableOpacity>
           </View>
 
           {/* Existing reminders */}
           {reminders.length > 0 && (
-            <View style={styles.existingSection}>
-              <Text style={styles.sectionLabel}>Existing Reminders</Text>
+            <View style={s.existingSection}>
+              <Text style={s.sectionLabel}>Existing Reminders</Text>
               {reminders.map((r) => (
-                <View key={r.id} style={styles.reminderRow}>
-                  <Text style={styles.reminderIcon}>⏰</Text>
-                  <Text style={styles.reminderText}>
+                <View key={r.id} style={s.reminderRow}>
+                  <Text style={s.reminderIcon}>⏰</Text>
+                  <Text style={s.reminderText}>
                     {formatDate(r.timestamp)}
                   </Text>
                   <TouchableOpacity
                     onPress={() => onRemove(r.id)}
                     activeOpacity={0.6}
                   >
-                    <Text style={styles.removeBtn}>✕</Text>
+                    <Text style={s.removeBtn}>✕</Text>
                   </TouchableOpacity>
                 </View>
               ))}
@@ -115,55 +105,81 @@ export default function ReminderModal({
           )}
 
           {/* Date Picker */}
-          <View style={styles.pickerSection}>
-            <Text style={styles.sectionLabel}>Select Date & Time</Text>
+          <View style={s.pickerSection}>
+            <Text style={s.sectionLabel}>Select Date & Time</Text>
 
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setShowPicker(true)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.dateButtonText}>
-                ⏰ {formatDate(pickerDate)}
-              </Text>
-            </TouchableOpacity>
+            {/* Web: show HTML5 picker inline */}
+            {Platform.OS === 'web' ? (
+              <View style={s.webPickerWrap}>
+                <DateTimePicker
+                  value={pickerDate}
+                  onChange={(d) => setPickerDate(d)}
+                  minimumDate={new Date()}
+                  mode="datetime"
+                  colors={colors}
+                />
+                <TouchableOpacity
+                  style={s.setBtn}
+                  onPress={handleSetReminder}
+                  activeOpacity={0.7}
+                >
+                  <Text style={s.setBtnText}>SET REMINDER</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={s.dateButton}
+                  onPress={() => setShowPicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={s.dateButtonText}>
+                    ⏰ {formatDate(pickerDate)}
+                  </Text>
+                </TouchableOpacity>
 
-            {showPicker && (
-              <DateTimePicker
-                value={pickerDate}
-                mode="datetime"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={handleDateChange}
-                minimumDate={new Date()}
-                style={styles.picker}
-              />
-            )}
+                {showPicker && (
+                  <DateTimePicker
+                    value={pickerDate}
+                    onChange={(d) => {
+                      if (Platform.OS === 'android') {
+                        setShowPicker(false);
+                        onAdd(d);
+                      } else {
+                        setPickerDate(d);
+                      }
+                    }}
+                    minimumDate={new Date()}
+                    mode="datetime"
+                    colors={colors}
+                  />
+                )}
 
-            {/* iOS confirm button (picker stays open, user taps "Set") */}
-            {Platform.OS === 'ios' && showPicker && (
-              <TouchableOpacity
-                style={styles.iosSetBtn}
-                onPress={() => {
-                  setShowPicker(false);
-                  handleSetReminder();
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.iosSetBtnText}>Use This Time</Text>
-              </TouchableOpacity>
+                {/* iOS confirm button */}
+                {Platform.OS === 'ios' && showPicker && (
+                  <TouchableOpacity
+                    style={s.iosSetBtn}
+                    onPress={() => {
+                      setShowPicker(false);
+                      handleSetReminder();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={s.iosSetBtnText}>Use This Time</Text>
+                  </TouchableOpacity>
+                )}
+              </>
             )}
           </View>
 
-          {/* Set Reminder Button (Android — picker auto-dismissed) */}
+          {/* Android: tap to open native picker */}
           {Platform.OS === 'android' && (
             <TouchableOpacity
-              style={styles.setBtn}
-              onPress={() => {
-                setShowPicker(true);
-              }}
+              style={s.setBtn}
+              onPress={() => setShowPicker(true)}
               activeOpacity={0.7}
             >
-              <Text style={styles.setBtnText}>SET REMINDER</Text>
+              <Text style={s.setBtnText}>SET REMINDER</Text>
             </TouchableOpacity>
           )}
         </TouchableOpacity>
@@ -172,109 +188,89 @@ export default function ReminderModal({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sheet: {
-    width: '88%',
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 20,
-    maxHeight: '80%',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#1a1a2e',
-    flex: 1,
-  },
-  closeBtn: {
-    fontSize: 18,
-    color: '#999',
-    paddingLeft: 12,
-  },
-  existingSection: {
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    paddingBottom: 12,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#888',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  reminderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-    gap: 6,
-  },
-  reminderIcon: {
-    fontSize: 14,
-  },
-  reminderText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#1a1a2e',
-  },
-  removeBtn: {
-    fontSize: 14,
-    color: '#e53935',
-    fontWeight: '700',
-    padding: 4,
-  },
-  pickerSection: {
-    marginBottom: 16,
-  },
-  dateButton: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: '#f9f9f9',
-  },
-  dateButtonText: {
-    fontSize: 15,
-    color: '#1a1a2e',
-  },
-  picker: {
-    marginTop: 8,
-  },
-  iosSetBtn: {
-    marginTop: 8,
-    paddingVertical: 10,
-    backgroundColor: '#e8f0fe',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  iosSetBtnText: {
-    fontSize: 14,
-    color: '#1a73e8',
-    fontWeight: '600',
-  },
-  setBtn: {
-    backgroundColor: '#1a73e8',
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  setBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], sheetMaxWidth: number) =>
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: colors.overlayBg,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    sheet: {
+      width: sheetMaxWidth,
+      backgroundColor: colors.surface,
+      borderRadius: 14,
+      padding: 20,
+      maxHeight: '80%',
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 16,
+    },
+    title: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: colors.text,
+      flex: 1,
+    },
+    closeBtn: {
+      fontSize: 18,
+      color: colors.placeholder,
+      paddingLeft: 12,
+    },
+    existingSection: {
+      marginBottom: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      paddingBottom: 12,
+    },
+    sectionLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.subtext,
+      textTransform: 'uppercase',
+      marginBottom: 8,
+    },
+    reminderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 6,
+      gap: 6,
+    },
+    reminderIcon: { fontSize: 14 },
+    reminderText: { flex: 1, fontSize: 14, color: colors.text },
+    removeBtn: {
+      fontSize: 14,
+      color: colors.danger,
+      fontWeight: '700',
+      padding: 4,
+    },
+    pickerSection: { marginBottom: 16 },
+    webPickerWrap: { gap: 12 },
+    dateButton: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      backgroundColor: colors.muted,
+    },
+    dateButtonText: { fontSize: 15, color: colors.text },
+    iosSetBtn: {
+      marginTop: 8,
+      paddingVertical: 10,
+      backgroundColor: colors.primary + '20',
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    iosSetBtnText: { fontSize: 14, color: colors.primary, fontWeight: '600' },
+    setBtn: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 14,
+      alignItems: 'center',
+    },
+    setBtnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  });

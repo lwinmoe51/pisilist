@@ -8,6 +8,7 @@ module.exports = {
     '^firebase/auth$': '<rootDir>/src/__tests__/__mocks__/firebase-auth.ts',
     '^firebase/firestore$': '<rootDir>/src/__tests__/__mocks__/firebase-firestore.ts',
     '^expo-notifications$': '<rootDir>/src/__tests__/__mocks__/expo-notifications.ts',
+    '^@react-native-async-storage/async-storage$': '<rootDir>/src/__tests__/__mocks__/async-storage.ts',
   },
   testPathIgnorePatterns: ['/node_modules/', '/__mocks__/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],

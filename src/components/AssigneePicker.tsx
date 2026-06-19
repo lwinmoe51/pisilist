@@ -7,14 +7,16 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
+import { useTheme } from '../theme/ThemeContext';
 import { getUsersByUids } from '../services/users';
 
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onAssign: (uid: string | null) => void; // null = unassign
-  collaborators: string[]; // user IDs
+  onAssign: (uid: string | null) => void;
+  collaborators: string[];
   currentAssignee: string | null;
   ownerId: string;
 }
@@ -27,6 +29,8 @@ export default function AssigneePicker({
   currentAssignee,
   ownerId,
 }: Props) {
+  const { colors } = useTheme();
+  const { width } = useWindowDimensions();
   const [profiles, setProfiles] = useState<
     Map<string, { email: string; displayName: string }>
   >(new Map());
@@ -34,7 +38,6 @@ export default function AssigneePicker({
 
   useEffect(() => {
     if (!visible) return;
-
     setLoading(true);
     const allUids = [...new Set([ownerId, ...collaborators])];
     getUsersByUids(allUids).then((map) => {
@@ -51,11 +54,13 @@ export default function AssigneePicker({
   const items = [
     { uid: null as string | null, label: 'Unassigned' },
     ...collaborators.map((uid) => ({ uid, label: labelFor(uid) })),
-    // owner is always available even if not in collaborators list
     ...(!collaborators.includes(ownerId)
       ? [{ uid: ownerId, label: labelFor(ownerId) }]
       : []),
   ];
+
+  const sheetMaxWidth = Math.min(width, 480);
+  const s = themedStyles(colors, sheetMaxWidth);
 
   return (
     <Modal
@@ -65,17 +70,17 @@ export default function AssigneePicker({
       onRequestClose={onClose}
     >
       <TouchableOpacity
-        style={styles.overlay}
+        style={s.overlay}
         activeOpacity={1}
         onPress={onClose}
       >
-        <View style={styles.sheet}>
-          <Text style={styles.title}>Assign Task To</Text>
+        <View style={s.sheet}>
+          <Text style={s.title}>Assign Task To</Text>
 
           {loading ? (
             <ActivityIndicator
               size="small"
-              color="#1a73e8"
+              color={colors.primary}
               style={{ marginVertical: 20 }}
             />
           ) : (
@@ -89,18 +94,15 @@ export default function AssigneePicker({
 
                 return (
                   <TouchableOpacity
-                    style={[
-                      styles.option,
-                      isSelected && styles.optionSelected,
-                    ]}
+                    style={[s.option, isSelected && s.optionSelected]}
                     onPress={() => {
                       onAssign(item.uid);
                       onClose();
                     }}
                     activeOpacity={0.6}
                   >
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>
+                    <View style={s.avatar}>
+                      <Text style={s.avatarText}>
                         {item.uid
                           ? (profiles.get(item.uid)?.displayName ??
                               item.uid)[0].toUpperCase()
@@ -109,28 +111,26 @@ export default function AssigneePicker({
                     </View>
                     <Text
                       style={[
-                        styles.optionText,
-                        isSelected && styles.optionTextSelected,
+                        s.optionText,
+                        isSelected && s.optionTextSelected,
                       ]}
                     >
                       {item.label}
                     </Text>
-                    {isSelected && (
-                      <Text style={styles.check}>✓</Text>
-                    )}
+                    {isSelected && <Text style={s.check}>✓</Text>}
                   </TouchableOpacity>
                 );
               }}
-              style={styles.list}
+              style={s.list}
             />
           )}
 
           <TouchableOpacity
-            style={styles.closeBtn}
+            style={s.closeBtn}
             onPress={onClose}
             activeOpacity={0.7}
           >
-            <Text style={styles.closeText}>Cancel</Text>
+            <Text style={s.closeText}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -138,77 +138,60 @@ export default function AssigneePicker({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 34,
-    maxHeight: '60%',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1a1a2e',
-    marginBottom: 12,
-  },
-  list: {
-    maxHeight: 300,
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    gap: 10,
-  },
-  optionSelected: {
-    backgroundColor: '#e8f0fe',
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#1a73e8',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  optionText: {
-    flex: 1,
-    fontSize: 15,
-    color: '#1a1a2e',
-  },
-  optionTextSelected: {
-    fontWeight: '600',
-    color: '#1a73e8',
-  },
-  check: {
-    fontSize: 18,
-    color: '#1a73e8',
-    fontWeight: '700',
-  },
-  closeBtn: {
-    marginTop: 16,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  closeText: {
-    fontSize: 15,
-    color: '#666',
-  },
-});
+const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], sheetMaxWidth: number) =>
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: colors.overlayBg,
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    },
+    sheet: {
+      width: sheetMaxWidth,
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      paddingBottom: 34,
+      maxHeight: '60%',
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 12,
+    },
+    list: { maxHeight: 300 },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 8,
+      borderRadius: 8,
+      gap: 10,
+    },
+    optionSelected: {
+      backgroundColor: colors.primary + '20',
+    },
+    avatar: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    avatarText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+    optionText: { flex: 1, fontSize: 15, color: colors.text },
+    optionTextSelected: { fontWeight: '600', color: colors.primary },
+    check: { fontSize: 18, color: colors.primary, fontWeight: '700' },
+    closeBtn: {
+      marginTop: 16,
+      paddingVertical: 10,
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    closeText: { fontSize: 15, color: colors.subtext },
+  });

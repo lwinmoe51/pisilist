@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
+import { ThemeProvider } from './src/theme/ThemeContext';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { CardsProvider } from './src/contexts/CardsContext';
 import { InvitationsProvider } from './src/contexts/InvitationsContext';
@@ -12,16 +13,18 @@ export default function App() {
     setupNotifications();
   }, []);
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <CardsProvider>
-          <InvitationsProvider>
-            <NavigationContainer>
-              <RootNavigator />
-            </NavigationContainer>
-          </InvitationsProvider>
-        </CardsProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <CardsProvider>
+            <InvitationsProvider>
+              <NavigationContainer>
+                <RootNavigator />
+              </NavigationContainer>
+            </InvitationsProvider>
+          </CardsProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
