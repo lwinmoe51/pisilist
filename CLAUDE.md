@@ -61,7 +61,7 @@ npx tsc --noEmit        # TypeScript type-check
 
 ## Installed Plugins (MCP Tools)
 
-Four Claude Code plugins are installed and enabled in `.claude/settings.json`. Agents, skills, and the `.mcp.json` config are designed to leverage them:
+Five Claude Code plugins are installed and enabled in `.claude/settings.json`. Agents, skills, and the `.mcp.json` config are designed to leverage them:
 
 ### 1. Firebase (`firebase@claude-plugins-official`)
 
@@ -95,6 +95,18 @@ Used for:
 - Expo SDK 56 documentation and best practices
 - Build and deployment guidance
 
+### 5. Frontend Design (`frontend-design@claude-plugins-official`)
+
+MANDATORY for all UI/UX work. Whenever writing or modifying any component, screen, style, or layout, invoke the `pisilist:frontend-design` skill FIRST — before writing code. This skill provides:
+
+- Production-grade UI/UX patterns and design system thinking
+- Responsive design guidance (mobile-first, breakpoints)
+- Accessibility best practices
+- Dark mode / theming patterns
+- Component composition and layout architecture
+
+> **Rule:** Any task involving `.tsx` files, `StyleSheet`, colors, spacing, or user-facing layout MUST use the `frontend-design` skill before implementation.
+
 ## Agent Responsibilities
 
 | Agent          | Trigger                                                               | Uses            |
@@ -118,6 +130,7 @@ pisilist/
 │       │   └── SKILL.md               # Code review using context7 for up-to-date best practices
 │       └── documentation/
 │           └── SKILL.md               # Documentation generation using context7 for API references
+│   └── settings.json                  # Enabled plugins: firebase, github, context7, expo, frontend-design
 ├── wiki/
 │   ├── report.md                      # Job-by-job log: errors, changes, test results
 │   ├── state.md                       # Current project state: pending tasks, blockers
@@ -134,6 +147,7 @@ pisilist/
 
 - **code_review/SKILL.md** — Reviews code changes before they land. Uses `context7` to validate that React Native, Expo, and Firebase SDK APIs are used correctly and follow current best practices. Checks adherence to project coding standards.
 - **documentation/SKILL.md** — Generates and maintains project documentation. Uses `context7` to pull accurate API references for React Native, Expo, and Firebase when documenting components and data flows.
+- **frontend-design (plugin skill)** — MUST be invoked before any UI/UX code change. Provides production-grade design patterns, responsive layout guidance, accessibility checks, dark mode patterns, and component composition architecture. Scoped to the pisilist project as `pisilist:frontend-design`.
 
 ### .mcp.json Configuration
 
@@ -142,7 +156,8 @@ The `.mcp.json` file declares:
 1. The Firebase MCP server (from the firebase plugin) for Firestore, Auth, and Cloud Functions operations
 2. The GitHub MCP server (from the github plugin) for repository operations
 3. The Context7 MCP server (from the context7 plugin) for library documentation lookups
-4. Project-level MCP tool definitions mapping these servers to the agents that use them (`wiki_manager`, `git_manager`, `test_manager`)
+4. The Frontend Design MCP server (from the frontend-design plugin) for UI/UX design system guidance
+5. Project-level MCP tool definitions mapping these servers to the agents that use them (`wiki_manager`, `git_manager`, `test_manager`)
 
 ## Project Structure
 

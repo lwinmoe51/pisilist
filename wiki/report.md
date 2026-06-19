@@ -1,5 +1,21 @@
 # Report — pisilist
 
+## [2026-06-19] Job: Install frontend-design Plugin + Update Documentation
+
+**Status:** ✅ Success
+**Summary:** Installed `frontend-design@claude-plugins-official` plugin at project level. Updated CLAUDE.md and wiki/ to document the new plugin and enforce its use for all UI/UX work.
+
+### Changes
+- Installed `frontend-design@claude-plugins-official` plugin (scoped as `pisilist:frontend-design` skill)
+- `CLAUDE.md` — Added plugin #5 (Frontend Design), mandatory UI/UX rule, skill description, project structure, .mcp.json section update
+- `wiki/state.md` — Refreshed with all recent work, plugin list, and skill list
+- `wiki/report.md` — This entry
+
+### Rule
+Any task involving `.tsx` files, `StyleSheet`, colors, spacing, or user-facing layout MUST use the `pisilist:frontend-design` skill before implementation.
+
+---
+
 ## [2026-06-19] Job: UI Overhaul — Dark Mode + Responsive Layout + Platform DateTimePicker
 
 **Status:** ✅ Success
