@@ -7,6 +7,7 @@ module.exports = {
     '^firebase/app$': '<rootDir>/src/__tests__/__mocks__/firebase-app.ts',
     '^firebase/auth$': '<rootDir>/src/__tests__/__mocks__/firebase-auth.ts',
     '^firebase/firestore$': '<rootDir>/src/__tests__/__mocks__/firebase-firestore.ts',
+    '^expo-notifications$': '<rootDir>/src/__tests__/__mocks__/expo-notifications.ts',
   },
   testPathIgnorePatterns: ['/node_modules/', '/__mocks__/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
@@ -17,12 +18,11 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      // Goal: 70%+. Current: ~7% (components/screens not yet tested).
-      // Raise these as component tests are added.
-      statements: 5,
-      branches: 5,
-      functions: 5,
-      lines: 5,
+      // Goal: 70%+. Coverage improves as more components/screens get tests.
+      statements: 15,
+      branches: 10,
+      functions: 12,
+      lines: 15,
     },
   },
 };

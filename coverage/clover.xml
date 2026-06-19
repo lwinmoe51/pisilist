@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1781859696344" clover="3.2.0">
-  <project timestamp="1781859696345" name="All files">
-    <metrics statements="523" coveredstatements="38" conditionals="361" coveredconditionals="29" methods="174" coveredmethods="14" elements="1058" coveredelements="81" complexity="0" loc="523" ncloc="523" packages="7" files="20" classes="20"/>
+<coverage generated="1781862378086" clover="3.2.0">
+  <project timestamp="1781862378086" name="All files">
+    <metrics statements="523" coveredstatements="83" conditionals="361" coveredconditionals="61" methods="174" coveredmethods="30" elements="1058" coveredelements="174" complexity="0" loc="523" ncloc="523" packages="7" files="20" classes="20"/>
     <package name="components">
-      <metrics statements="52" coveredstatements="0" conditionals="64" coveredconditionals="0" methods="18" coveredmethods="0"/>
+      <metrics statements="52" coveredstatements="5" conditionals="64" coveredconditionals="20" methods="18" coveredmethods="1"/>
       <file name="AssigneePicker.tsx" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/components/AssigneePicker.tsx">
         <metrics statements="21" coveredstatements="0" conditionals="23" coveredconditionals="0" methods="8" coveredmethods="0"/>
         <line num="30" count="0" type="stmt"/>
@@ -29,12 +29,12 @@
         <line num="141" count="0" type="stmt"/>
       </file>
       <file name="CardPreview.tsx" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/components/CardPreview.tsx">
-        <metrics statements="5" coveredstatements="0" conditionals="20" coveredconditionals="0" methods="1" coveredmethods="0"/>
-        <line num="19" count="0" type="stmt"/>
-        <line num="28" count="0" type="stmt"/>
-        <line num="29" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="31" count="0" type="stmt"/>
-        <line num="73" count="0" type="stmt"/>
+        <metrics statements="5" coveredstatements="5" conditionals="20" coveredconditionals="20" methods="1" coveredmethods="1"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="28" count="13" type="stmt"/>
+        <line num="29" count="13" type="cond" truecount="2" falsecount="0"/>
+        <line num="31" count="13" type="stmt"/>
+        <line num="73" count="1" type="stmt"/>
       </file>
       <file name="ReminderModal.tsx" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/components/ReminderModal.tsx">
         <metrics statements="26" coveredstatements="0" conditionals="21" coveredconditionals="0" methods="9" coveredmethods="0"/>
@@ -70,26 +70,26 @@
       <metrics statements="6" coveredstatements="5" conditionals="6" coveredconditionals="4" methods="0" coveredmethods="0"/>
       <file name="firebase.ts" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/config/firebase.ts">
         <metrics statements="6" coveredstatements="5" conditionals="6" coveredconditionals="4" methods="0" coveredmethods="0"/>
-        <line num="5" count="3" type="stmt"/>
-        <line num="14" count="3" type="cond" truecount="3" falsecount="1"/>
+        <line num="5" count="6" type="stmt"/>
+        <line num="14" count="6" type="cond" truecount="3" falsecount="1"/>
         <line num="15" count="0" type="stmt"/>
-        <line num="21" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="23" count="3" type="stmt"/>
-        <line num="24" count="3" type="stmt"/>
+        <line num="21" count="6" type="cond" truecount="1" falsecount="1"/>
+        <line num="23" count="6" type="stmt"/>
+        <line num="24" count="6" type="stmt"/>
       </file>
     </package>
     <package name="contexts">
-      <metrics statements="44" coveredstatements="0" conditionals="10" coveredconditionals="0" methods="18" coveredmethods="0"/>
+      <metrics statements="44" coveredstatements="7" conditionals="10" coveredconditionals="0" methods="18" coveredmethods="3"/>
       <file name="AuthContext.tsx" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/contexts/AuthContext.tsx">
-        <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="0"/>
-        <line num="11" count="0" type="stmt"/>
-        <line num="18" count="0" type="stmt"/>
-        <line num="24" count="0" type="stmt"/>
-        <line num="25" count="0" type="stmt"/>
+        <metrics statements="8" coveredstatements="7" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="3"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
         <line num="26" count="0" type="stmt"/>
-        <line num="33" count="0" type="stmt"/>
-        <line num="36" count="0" type="stmt"/>
-        <line num="41" count="0" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="41" count="2" type="stmt"/>
       </file>
       <file name="CardsContext.tsx" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/contexts/CardsContext.tsx">
         <metrics statements="22" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="9" coveredmethods="0"/>
@@ -460,7 +460,7 @@
       </file>
     </package>
     <package name="services">
-      <metrics statements="123" coveredstatements="33" conditionals="80" coveredconditionals="25" methods="46" coveredmethods="14"/>
+      <metrics statements="123" coveredstatements="66" conditionals="80" coveredconditionals="37" methods="46" coveredmethods="26"/>
       <file name="auth.ts" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/services/auth.ts">
         <metrics statements="19" coveredstatements="14" conditionals="2" coveredconditionals="0" methods="6" coveredmethods="5"/>
         <line num="18" count="1" type="stmt"/>
@@ -528,25 +528,25 @@
         <line num="220" count="1" type="cond" truecount="2" falsecount="0"/>
       </file>
       <file name="invitations.ts" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/services/invitations.ts">
-        <metrics statements="23" coveredstatements="0" conditionals="18" coveredconditionals="0" methods="10" coveredmethods="0"/>
-        <line num="28" count="0" type="stmt"/>
-        <line num="32" count="0" type="stmt"/>
-        <line num="36" count="0" type="stmt"/>
-        <line num="51" count="0" type="stmt"/>
-        <line num="54" count="0" type="stmt"/>
-        <line num="55" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="56" count="0" type="stmt"/>
-        <line num="61" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="62" count="0" type="stmt"/>
-        <line num="68" count="0" type="stmt"/>
-        <line num="78" count="0" type="stmt"/>
-        <line num="87" count="0" type="stmt"/>
-        <line num="88" count="0" type="stmt"/>
-        <line num="89" count="0" type="stmt"/>
-        <line num="92" count="0" type="stmt"/>
-        <line num="97" count="0" type="stmt"/>
-        <line num="108" count="0" type="stmt"/>
-        <line num="115" count="0" type="stmt"/>
+        <metrics statements="23" coveredstatements="18" conditionals="18" coveredconditionals="4" methods="10" coveredmethods="7"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="32" count="2" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="51" count="3" type="stmt"/>
+        <line num="54" count="3" type="stmt"/>
+        <line num="55" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="61" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="68" count="1" type="stmt"/>
+        <line num="78" count="1" type="stmt"/>
+        <line num="87" count="1" type="stmt"/>
+        <line num="88" count="1" type="stmt"/>
+        <line num="89" count="1" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
+        <line num="97" count="1" type="stmt"/>
+        <line num="108" count="1" type="stmt"/>
+        <line num="115" count="1" type="stmt"/>
         <line num="118" count="0" type="stmt"/>
         <line num="119" count="0" type="stmt"/>
         <line num="120" count="0" type="stmt"/>
@@ -554,28 +554,28 @@
         <line num="134" count="0" type="stmt"/>
       </file>
       <file name="notifications.ts" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/services/notifications.ts">
-        <metrics statements="21" coveredstatements="0" conditionals="12" coveredconditionals="0" methods="6" coveredmethods="0"/>
-        <line num="10" count="0" type="stmt"/>
+        <metrics statements="21" coveredstatements="15" conditionals="12" coveredconditionals="8" methods="6" coveredmethods="5"/>
+        <line num="10" count="1" type="stmt"/>
         <line num="11" count="0" type="stmt"/>
-        <line num="21" count="0" type="stmt"/>
-        <line num="22" count="0" type="stmt"/>
-        <line num="24" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="24" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="25" count="0" type="stmt"/>
         <line num="26" count="0" type="stmt"/>
-        <line num="29" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="29" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="30" count="0" type="stmt"/>
         <line num="31" count="0" type="stmt"/>
-        <line num="35" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="35" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="36" count="0" type="stmt"/>
-        <line num="44" count="0" type="stmt"/>
-        <line num="58" count="0" type="stmt"/>
-        <line num="59" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="61" count="0" type="stmt"/>
-        <line num="75" count="0" type="stmt"/>
-        <line num="84" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="85" count="0" type="stmt"/>
-        <line num="95" count="0" type="stmt"/>
-        <line num="98" count="0" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="58" count="2" type="stmt"/>
+        <line num="59" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="61" count="1" type="stmt"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="84" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="85" count="1" type="stmt"/>
+        <line num="95" count="2" type="stmt"/>
+        <line num="98" count="3" type="stmt"/>
       </file>
       <file name="users.ts" path="/mnt/c/Users/robot/VibeCodeTour/pisilist/src/services/users.ts">
         <metrics statements="19" coveredstatements="14" conditionals="16" coveredconditionals="4" methods="5" coveredmethods="5"/>

@@ -150,3 +150,43 @@ None. TypeScript compiles cleanly.
 
 ### Errors
 None. Rules compiled cleanly, all 22 tests pass.
+
+---
+
+## [2026-06-19] Job: Component & Context Tests (Coverage from 7% → 16%)
+
+**Status:** ✅ Success
+**Summary:** Added 33 new tests across 5 new test suites. Coverage improved from 7.6% to 16.2%. CardPreview component reaches 100% coverage.
+
+### New Test Suites (5)
+
+| Suite | Tests | Coverage |
+|-------|-------|----------|
+| `config/firebase.test.ts` | 3 | Config exports verified (83% stmts) |
+| `services/notifications.test.ts` | 7 | scheduleReminder, cancelReminder, setupNotifications (74% stmts) |
+| `services/invitations.test.ts` | 6 | sendInvitation validation, accept, decline, onPendingInvitations (78% stmts) |
+| `components/CardPreview.test.tsx` | 13 | All rendering paths: title, counts, pinned, shared, collab badge, onPress (100% stmts) |
+| `contexts/AuthContext.test.tsx` | 3 | Provider rendering, default state, useAuth defaults (87% stmts) |
+
+### Key Changes
+- Added `expo-notifications` mock (`__mocks__/expo-notifications.ts`) to jest.config.js moduleNameMapper
+- Fixed `@testing-library/react-native` v14 async render (await render())
+- Raised coverage thresholds: stmts 5→15%, branches 5→10%, funcs 5→12%, lines 5→15%
+
+### Services coverage (improved)
+- `invitations.ts`: 0% → 78%
+- `notifications.ts`: 0% → 74%
+- `auth.ts`: 73% (unchanged, already solid)
+- `users.ts`: 73% (unchanged)
+- `cards.ts`: 16% (unchanged, CRUD needs integration tests)
+
+### Components coverage (new)
+- `CardPreview.tsx`: 100% stmts, branches, funcs, lines
+- `AssigneePicker.tsx`: 0% (not yet tested)
+- `ReminderModal.tsx`: 0% (not yet tested)
+
+### Contexts coverage (new)
+- `AuthContext.tsx`: 87.5% stmts (loading state path covered)
+
+### Errors
+None. All 55 tests pass. Coverage thresholds met.

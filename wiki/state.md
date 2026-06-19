@@ -12,10 +12,15 @@
 - ✅ Firebase project: pisilist-app (Firestore + Auth provisioned)
 - ✅ Firestore security rules deployed (users, cards, tasks, invitations)
 - ✅ Firestore indexes deployed
-- ✅ Jest test suite (22 tests, 4 suites, all passing)
+- ✅ Jest test suite (55 tests, 9 suites, all passing, 16% coverage)
+  - Services: auth (73%), cards (16%), users (73%), invitations (78%), notifications (74%)
+  - Components: CardPreview (100%)
+  - Contexts: AuthContext (88%)
+  - Config: firebase.ts (83%)
+  - Types: structural validation
 
 ## Pending
-- Write additional tests for screens and components (currently at ~7% coverage, services tested)
+- Write tests for remaining screens and components (AssigneePicker, ReminderModal, screens)
 - Test end-to-end on device
 - Deploy to app stores
 
