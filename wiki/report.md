@@ -1,5 +1,25 @@
 # Report — pisilist
 
+## [2026-06-19] Job: Firestore Query Fix — Two Queries Matching Security Rules
+
+**Status:** ✅ Success
+**Summary:** Fixed "Missing or insufficient permissions" on Dashboard by splitting card query into two queries that each match the Firestore security rules.
+
+### Root Cause
+`cardsQuery(uid)` queried ALL cards with only `orderBy('updatedAt', 'desc')` — no `where` clause. Firestore security rules are **not filters** — the query itself must only ask for documents the rules allow. Since `canReadCard` checks `ownerId == uid` OR `uid in collaborators`, a query that asks for all cards is rejected entirely.
+
+### Changes
+- `src/services/cards.ts`: Replaced single `cardsQuery()` with `ownedCardsQuery(uid)` (where ownerId == uid) and `collaboratedCardsQuery(uid)` (where array-contains collaborators, uid). Added `where` to `firebase/firestore` imports.
+- `src/contexts/CardsContext.tsx`: Runs two `onSnapshot` listeners, merges + deduplicates into one sorted card list. Each query matches security rules independently — no more permission errors.
+
+### Test Results
+All 55 tests pass (9 suites). No regressions.
+
+### Errors
+None.
+
+---
+
 ## [2026-06-19] Job: Web Launch Fixes — Auth Error Mapping + CardPreview Shadow
 
 **Status:** ✅ Success

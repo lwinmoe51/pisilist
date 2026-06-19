@@ -10,6 +10,7 @@ import {
   increment,
   writeBatch,
   query,
+  where,
   orderBy,
   arrayUnion,
 } from 'firebase/firestore';
@@ -181,13 +182,26 @@ export async function updateTaskReminders(
 
 // ── Query helpers ──────────────────────────────────────────────────
 
-/** Return a query for cards visible to the current user. */
-export function cardsQuery(uid: string) {
-  // Returns all cards ordered by updatedAt. Client-side filtering
-  // keeps this simple without requiring composite indexes.
-  // future: array-contains query for collaborators
+/**
+ * Return a query for cards owned by the given uid.
+ * Matches Firestore security rules: `ownerId == request.auth.uid`.
+ */
+export function ownedCardsQuery(uid: string) {
   return query(
     cardCollection(),
+    where('ownerId', '==', uid),
+    orderBy('updatedAt', 'desc'),
+  );
+}
+
+/**
+ * Return a query for cards where the given uid is in the collaborators array.
+ * Matches Firestore security rules: `uid in doc.data.collaborators`.
+ */
+export function collaboratedCardsQuery(uid: string) {
+  return query(
+    cardCollection(),
+    where('collaborators', 'array-contains', uid),
     orderBy('updatedAt', 'desc'),
   );
 }

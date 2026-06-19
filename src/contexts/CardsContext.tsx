@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onSnapshot } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
-import { cardsQuery, docToCard } from '../services/cards';
+import { ownedCardsQuery, collaboratedCardsQuery, docToCard } from '../services/cards';
 import type { Card } from '../types';
 
 interface CardsState {
@@ -32,32 +32,72 @@ export function CardsProvider({ children }: { children: React.ReactNode }) {
 
     setState((prev) => ({ ...prev, loading: true }));
 
-    const q = cardsQuery(user.uid);
-    const unsubscribe = onSnapshot(
-      q,
+    // Two separate queries so each matches Firestore security rules.
+    // Security rules are NOT filters — the query itself must only ask
+    // for documents the rules allow.
+    const ownedQ = ownedCardsQuery(user.uid);
+    const collabQ = collaboratedCardsQuery(user.uid);
+
+    const ownedCards = new Map<string, Card>();
+    const collabCards = new Map<string, Card>();
+    let ownedReady = false;
+    let collabReady = false;
+    let ownedError: string | null = null;
+    let collabError: string | null = null;
+
+    function mergeAndSort() {
+      const merged = new Map([...ownedCards, ...collabCards]);
+      const cards = Array.from(merged.values());
+      // pinned first, then by updatedAt desc
+      cards.sort((a, b) => {
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+        return b.updatedAt.getTime() - a.updatedAt.getTime();
+      });
+      setState({ cards, loading: false, error: null });
+    }
+
+    const unsubOwned = onSnapshot(
+      ownedQ,
       (snapshot) => {
-        const allCards = snapshot.docs.map((d) =>
-          docToCard(d.id, d.data()),
-        );
-        // Client-side filter: cards owned by OR collaborated with the user
-        const cards = allCards.filter(
-          (c) =>
-            c.ownerId === user.uid ||
-            c.collaborators.includes(user.uid),
-        );
-        // pinned first, then by updatedAt desc
-        cards.sort((a, b) => {
-          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-          return b.updatedAt.getTime() - a.updatedAt.getTime();
+        ownedCards.clear();
+        snapshot.docs.forEach((d) => {
+          ownedCards.set(d.id, docToCard(d.id, d.data()));
         });
-        setState({ cards, loading: false, error: null });
+        ownedReady = true;
+        ownedError = null;
+        mergeAndSort();
       },
       (err) => {
-        setState({ cards: [], loading: false, error: err.message });
+        ownedError = err.message;
+        if (collabError) {
+          setState({ cards: [], loading: false, error: ownedError });
+        }
       },
     );
 
-    return unsubscribe;
+    const unsubCollab = onSnapshot(
+      collabQ,
+      (snapshot) => {
+        collabCards.clear();
+        snapshot.docs.forEach((d) => {
+          collabCards.set(d.id, docToCard(d.id, d.data()));
+        });
+        collabReady = true;
+        collabError = null;
+        mergeAndSort();
+      },
+      (err) => {
+        collabError = err.message;
+        if (ownedError) {
+          setState({ cards: [], loading: false, error: collabError });
+        }
+      },
+    );
+
+    return () => {
+      unsubOwned();
+      unsubCollab();
+    };
   }, [user]);
 
   return (
