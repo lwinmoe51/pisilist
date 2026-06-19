@@ -1,0 +1,138 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper Functions ──────────────────────────────────────────
+
+    /** Check if the requestor is the owner of the given card document. */
+    function isOwner(doc) {
+      return request.auth != null
+        && request.auth.uid == doc.data.ownerId;
+    }
+
+    /** Check if the requestor can read the given card. */
+    function canReadCard(doc) {
+      return request.auth != null
+        && (
+          request.auth.uid == doc.data.ownerId
+          || request.auth.uid in doc.data.collaborators
+        );
+    }
+
+    /** Check if the requestor can write to the given card. */
+    function canWriteCard(doc) {
+      return request.auth != null
+        && (
+          request.auth.uid == doc.data.ownerId
+          || request.auth.uid in doc.data.collaborators
+        );
+    }
+
+    // ── Users Collection ──────────────────────────────────────────
+    // Path: users/{uid}
+
+    match /users/{userId} {
+      // Any authenticated user can read any user profile (needed for
+      // collaborator lookups and avatar display).
+      allow read: if request.auth != null;
+
+      // Users can only create their own profile document.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid;
+
+      // Users can only update their own profile.
+      allow update: if request.auth != null
+        && request.auth.uid == userId;
+
+      // No one can delete user profiles through the client SDK.
+      allow delete: if false;
+    }
+
+    // ── Cards Collection ──────────────────────────────────────────
+    // Path: cards/{cardId}
+
+    match /cards/{cardId} {
+
+      // Only the card owner or collaborators can read a card.
+      allow read: if canReadCard(resource);
+
+      // Any authenticated user can create a card (they become the owner).
+      // Ensure new ownerId matches the authenticated user.
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.collaborators.size() == 0;
+
+      // Owner or collaborator can update. Only owner can change
+      // collaborators[] or ownerId (prevent privilege escalation).
+      allow update: if canWriteCard(resource)
+        && (
+          request.auth.uid == resource.data.ownerId
+          || (
+            request.resource.data.ownerId == resource.data.ownerId
+            && request.resource.data.collaborators == resource.data.collaborators
+          )
+        );
+
+      // Only the card owner can delete the card.
+      allow delete: if isOwner(resource);
+    }
+
+    // ── Tasks Subcollection ───────────────────────────────────────
+    // Path: cards/{cardId}/tasks/{taskId}
+
+    match /cards/{cardId}/tasks/{taskId} {
+
+      // Same read access as the parent card.
+      allow read: if canReadCard(
+        get(/databases/$(database)/documents/cards/$(cardId))
+      );
+
+      // Card owner or collaborators can create tasks.
+      allow create: if canWriteCard(
+        get(/databases/$(database)/documents/cards/$(cardId))
+      );
+
+      // Card owner or collaborators can update tasks.
+      allow update: if canWriteCard(
+        get(/databases/$(database)/documents/cards/$(cardId))
+      );
+
+      // Card owner or collaborators can delete tasks.
+      allow delete: if canWriteCard(
+        get(/databases/$(database)/documents/cards/$(cardId))
+      );
+    }
+
+    // ── Invitations Collection ────────────────────────────────────
+    // Path: invitations/{inviteId}
+
+    match /invitations/{inviteId} {
+
+      // Sender or recipient can read the invitation.
+      allow read: if request.auth != null
+        && (
+          resource.data.fromUserId == request.auth.uid
+          || resource.data.toEmail == request.auth.token.email
+        );
+
+      // Any authenticated user can create an invitation.
+      // Ensure fromUserId matches the authenticated user.
+      allow create: if request.auth != null
+        && request.resource.data.fromUserId == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      // Only the recipient can update the invitation (accept/decline).
+      allow update: if request.auth != null
+        && resource.data.toEmail == request.auth.token.email
+        && (
+          request.resource.data.status == 'accepted'
+          || request.resource.data.status == 'declined'
+        );
+
+      // No one can delete invitations through the client SDK.
+      allow delete: if false;
+    }
+  }
+}

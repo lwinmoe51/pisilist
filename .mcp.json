@@ -1,0 +1,43 @@
+{
+  "mcpServers": {
+    "firebase": {
+      "type": "plugin",
+      "plugin": "firebase@claude-plugins-official",
+      "description": "Firebase MCP server for Firestore, Auth, Cloud Functions, and Security Rules operations"
+    },
+    "github": {
+      "type": "plugin",
+      "plugin": "github@claude-plugins-official",
+      "description": "GitHub MCP server for repository operations — branches, commits, PRs, issues"
+    },
+    "context7": {
+      "type": "plugin",
+      "plugin": "context7@claude-plugins-official",
+      "description": "Context7 MCP server for up-to-date library/API documentation lookups (React Native, Expo, Firebase SDK)"
+    }
+  },
+  "agents": {
+    "wiki_manager": {
+      "mcpServers": ["context7"],
+      "description": "Keeps wiki/ docs updated. Uses context7 for current library API references during documentation."
+    },
+    "git_manager": {
+      "mcpServers": ["github"],
+      "description": "Manages git commits, branches, PRs via GitHub plugin."
+    },
+    "test_manager": {
+      "mcpServers": [],
+      "description": "Manages Jest testing and coverage reporting."
+    }
+  },
+  "skills": {
+    "code_review": {
+      "mcpServers": ["context7"],
+      "description": "Reviews code using context7 to verify API correctness and best practices."
+    },
+    "documentation": {
+      "mcpServers": ["context7"],
+      "description": "Generates documentation with context7-verified API references."
+    }
+  }
+}

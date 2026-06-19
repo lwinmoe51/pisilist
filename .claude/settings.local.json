@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npx expo *)",
+      "Bash(firebase deploy *)",
+      "Bash(firebase projects:create *)"
+    ]
+  }
+}
