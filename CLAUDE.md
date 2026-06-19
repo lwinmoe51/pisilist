@@ -64,30 +64,44 @@ npx tsc --noEmit        # TypeScript type-check
 Four Claude Code plugins are installed and enabled in `.claude/settings.json`. Agents, skills, and the `.mcp.json` config are designed to leverage them:
 
 ### 1. Firebase (`firebase@claude-plugins-official`)
+
 Directly powers pisilist's backend. Agents and skills should use Firebase MCP tools for:
+
 - **Authentication** — create/manage user accounts, password reset flows, email verification tokens
 - **Firestore** — read/write cards, tasks, collaborators, invitations, and reminders in real time
 - **Cloud Functions** — deploy Firestore-triggered background functions for delayed push notification execution (the "no-cron" reminder architecture)
 - **Security Rules** — define and deploy Firestore security rules scoped to card ownership and collaborator access
 
 ### 2. GitHub (`github@claude-plugins-official`)
+
 Used by the `git_manager` agent for:
+
 - Repository management (create/push branches, commits, PRs)
 - Issue tracking linked to wiki `state.md` blockers
 - Automated PR descriptions summarizing changes from `wiki/report.md`
 
 ### 3. Context7 (`context7@claude-plugins-official`)
+
 Used by the `wiki_manager` agent for:
+
 - Maintaining persistent project context across sessions
 - Resolving context when documentation in `wiki/` becomes stale
 - Providing up-to-date library/API documentation (React Native, Expo, Firebase SDK) during implementation
 
 ### 4. Expo (`expo@claude-plugins-official`)
+
 Used for:
+
 - Expo SDK 56 documentation and best practices
 - Build and deployment guidance
 
 ## Agent Responsibilities
+
+| Agent          | Trigger                                                               | Uses            |
+| -------------- | --------------------------------------------------------------------- | --------------- |
+| `git_manager`  | After every completed feature (tests pass, wiki updated)              | github plugin   |
+| `wiki_manager` | Use context7 for library docs; wiki files updated inline per workflow | context7 plugin |
+| `test_manager` | Write tests alongside new code; run `npm test` per workflow           | Jest            |
 
 ### Required Project Structure
 
@@ -124,6 +138,7 @@ pisilist/
 ### .mcp.json Configuration
 
 The `.mcp.json` file declares:
+
 1. The Firebase MCP server (from the firebase plugin) for Firestore, Auth, and Cloud Functions operations
 2. The GitHub MCP server (from the github plugin) for repository operations
 3. The Context7 MCP server (from the context7 plugin) for library documentation lookups
