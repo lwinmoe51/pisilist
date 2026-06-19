@@ -1,5 +1,27 @@
 # Report — pisilist
 
+## [2026-06-19] Job: Firestore Composite Indexes for Card Queries
+
+**Status:** ✅ Success
+**Summary:** Added composite indexes required by `ownedCardsQuery` and `collaboratedCardsQuery` to `firestore.indexes.json` and deployed to pisilist-app.
+
+### Changes
+- `firestore.indexes.json` — Added two composite indexes on `cards` collection:
+  - `collaborators` (ARRAY_CONTAINS) + `updatedAt` (DESC)
+  - `ownerId` (ASC) + `updatedAt` (DESC)
+- Deployed via `firebase deploy --only firestore`
+
+### Why
+The new query split (`ownedCardsQuery` / `collaboratedCardsQuery`) uses `where` + `orderBy` combinations that Firestore needs composite indexes for. Without them, the query returns: "The query requires an index."
+
+### Test Results
+All 55 tests pass (9 suites).
+
+### Errors
+None. Indexes may take 2-5 minutes to build before the app queries work.
+
+---
+
 ## [2026-06-19] Job: Firestore Query Fix — Two Queries Matching Security Rules
 
 **Status:** ✅ Success
