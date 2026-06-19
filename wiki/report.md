@@ -1,5 +1,23 @@
 # Report — pisilist
 
+## [2026-06-19] Job: Web Launch Fixes — Auth Error Mapping + CardPreview Shadow
+
+**Status:** ✅ Success
+**Summary:** Fixed Firebase 400 error messaging and React Native Web deprecation warning for shadow* props.
+
+### Changes
+- Added `auth/operation-not-allowed` error mapping in `src/services/auth.ts` (clarifies Email/Password must be enabled in Firebase Console)
+- Changed default error fallback to include error code: `` `[${code}] ${message}` `` (previously swallowed code)
+- Replaced deprecated `shadowColor`/`shadowOffset`/`shadowOpacity`/`shadowRadius` with `boxShadow` in `src/components/CardPreview.tsx` (React Native Web `shadow*` deprecation)
+
+### Test Results
+All 55 tests pass (9 suites). No regressions.
+
+### Errors
+None.
+
+---
+
 ## [2026-06-19] Job: Project Initialization
 
 **Status:** ✅ Success

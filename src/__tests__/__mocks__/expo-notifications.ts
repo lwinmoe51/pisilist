@@ -1,5 +1,13 @@
 /** Minimal mock of expo-notifications for unit tests. */
 
+// Avoid importing from the real module which pulls in native deps not available in Jest.
+export interface NotificationBehavior {
+  shouldShowAlert: boolean;
+  shouldPlaySound: boolean;
+  shouldSetBadge: boolean;
+  priority?: 'default' | 'high' | 'low';
+}
+
 export const AndroidImportance = {
   HIGH: 'high',
   DEFAULT: 'default',

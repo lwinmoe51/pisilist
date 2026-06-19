@@ -79,10 +79,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#e8e8e8',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
     elevation: 2,
   },
   cardShared: {

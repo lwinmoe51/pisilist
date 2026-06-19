@@ -27,13 +27,15 @@ function mapAuthError(error: { code: string; message: string }): AuthError {
       'auth/email-already-in-use': 'An account with this email already exists.',
       'auth/invalid-email': 'Please enter a valid email address.',
       'auth/user-not-found': 'No account found with this email address.',
+      'auth/operation-not-allowed':
+        'Email/password sign-in is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.',
       'auth/wrong-password': 'Incorrect password. Please try again.',
       'auth/weak-password': 'Password must be at least 6 characters.',
       'auth/invalid-credential': 'Invalid email or password.',
       'auth/too-many-requests': 'Too many attempts. Please try again later.',
       'auth/network-request-failed':
         'Network error. Please check your connection.',
-    }[error.code] ?? error.message;
+    }[error.code] ?? `[${error.code}] ${error.message}`;
   return new AuthError(message, error.code);
 }
 
