@@ -8,6 +8,7 @@ import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import CardDetailScreen from '../screens/CardDetailScreen';
 import InvitationsScreen from '../screens/InvitationsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -19,6 +20,7 @@ export type AppStackParamList = {
   Dashboard: undefined;
   CardDetail: { cardId: string };
   Invitations: undefined;
+  Settings: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -48,6 +50,7 @@ function AppNavigator() {
       <AppStack.Screen name="Dashboard" component={DashboardScreen} />
       <AppStack.Screen name="CardDetail" component={CardDetailScreen} />
       <AppStack.Screen name="Invitations" component={InvitationsScreen} />
+      <AppStack.Screen name="Settings" component={SettingsScreen} />
     </AppStack.Navigator>
   );
 }

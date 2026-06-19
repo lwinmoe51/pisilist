@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -27,15 +27,13 @@ interface Props {
   navigation: any;
 }
 
-/** Responsive column count based on screen width. */
 function getColumns(width: number, isWeb: boolean) {
-  if (!isWeb) return 2; // mobile always 2
+  if (!isWeb) return 2;
   if (width >= 1200) return 4;
   if (width >= 768) return 3;
   return 2;
 }
 
-/** Maximum content width for web centering; 0 = no cap. */
 const MAX_CONTENT_WIDTH = 1200;
 const GRID_GAP = 12;
 
@@ -43,38 +41,37 @@ export default function DashboardScreen({ navigation }: Props) {
   const { user } = useAuth();
   const { cards, loading, error } = useCards();
   const { invitations } = useInvitations();
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
 
-  const [modalVisible, setModalVisible] = React.useState(false);
-  const [newTitle, setNewTitle] = React.useState('');
-  const [creating, setCreating] = React.useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [search, setSearch] = useState('');
 
   const isWeb = Platform.OS === 'web';
   const columns = getColumns(width, isWeb);
   const contentMaxWidth = isWeb ? MAX_CONTENT_WIDTH : 0;
 
-  // Card width accounts for grid gap and horizontal padding
   const hPad = 16;
   const usableWidth = Math.min(width, contentMaxWidth || width) - hPad * 2;
   const cardWidth = (usableWidth - GRID_GAP * (columns - 1)) / columns;
 
-  const pinned = cards.filter((c) => c.pinned);
-  const others = cards.filter((c) => !c.pinned);
+  // Client-side search filter
+  const query = search.trim().toLowerCase();
+  const filtered = useMemo(() => {
+    if (!query) return cards;
+    return cards.filter((c) => c.title.toLowerCase().includes(query));
+  }, [cards, query]);
 
-  const handleSignOut = async () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: async () => {
-          await logOut();
-        },
-      },
-    ]);
-  };
+  const pinned = filtered.filter((c) => c.pinned);
+  const others = filtered.filter((c) => !c.pinned);
+
+  // Avatar label from user displayName/email
+  const avatarLabel = user
+    ? (user.displayName || user.email || '?')[0].toUpperCase()
+    : '?';
 
   const handleCreateCard = async () => {
     const title = newTitle.trim();
@@ -118,7 +115,7 @@ export default function DashboardScreen({ navigation }: Props) {
   );
 
   const renderSectionHeader = (title: string) => (
-    <Text style={themedStyles(colors).sectionTitle}>{title}</Text>
+    <Text style={themedStyles(colors, width).sectionTitle}>{title}</Text>
   );
 
   const allData: Array<{ type: 'pinned' } | { type: 'others' } | Card> = [];
@@ -140,41 +137,47 @@ export default function DashboardScreen({ navigation }: Props) {
     [renderCard],
   );
 
-  const s = themedStyles(colors);
+  const s = themedStyles(colors, width);
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
-      {/* Header */}
+      {/* Header: Search + Bell + Avatar — matches LAYOUT.md */}
       <View style={s.header}>
-        <View style={s.headerLeft}>
-          <Text style={s.brand}>PisiList</Text>
+        <View style={s.searchWrap}>
+          <Text style={s.searchIcon}>🔍</Text>
+          <TextInput
+            style={s.searchInput}
+            placeholder="Search your lists..."
+            placeholderTextColor={colors.placeholder}
+            value={search}
+            onChangeText={setSearch}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
         </View>
-        <View style={s.headerRight}>
-          <TouchableOpacity
-            style={s.bellButton}
-            onPress={() => navigation.navigate('Invitations')}
-            activeOpacity={0.7}
-          >
-            <Text style={s.bellIcon}>🔔</Text>
-            {invitations.length > 0 && (
-              <View style={s.bellBadge}>
-                <Text style={s.bellBadgeText}>
-                  {invitations.length > 9 ? '9+' : invitations.length}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSignOut} activeOpacity={0.7}>
-            <Text style={s.signOut}>Sign Out</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      {/* Greeting */}
-      <View style={s.greetingRow}>
-        <Text style={s.greeting}>
-          Welcome, {user?.displayName || user?.email}
-        </Text>
+        <TouchableOpacity
+          style={s.bellButton}
+          onPress={() => navigation.navigate('Invitations')}
+          activeOpacity={0.7}
+        >
+          <Text style={s.bellIcon}>🔔</Text>
+          {invitations.length > 0 && (
+            <View style={s.bellBadge}>
+              <Text style={s.bellBadgeText}>
+                {invitations.length > 9 ? '9+' : invitations.length}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={s.avatar}
+          onPress={() => navigation.navigate('Settings')}
+          activeOpacity={0.7}
+        >
+          <Text style={s.avatarLabel}>{avatarLabel}</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Card Grid */}
@@ -183,12 +186,16 @@ export default function DashboardScreen({ navigation }: Props) {
           <View style={s.center}>
             <Text style={s.errorText}>Error: {error}</Text>
           </View>
-        ) : cards.length === 0 && !loading ? (
+        ) : filtered.length === 0 && !loading ? (
           <View style={s.center}>
-            <Text style={s.placeholderIcon}>📋</Text>
-            <Text style={s.placeholderTitle}>No Cards Yet</Text>
+            <Text style={s.placeholderIcon}>{query ? '🔍' : '📋'}</Text>
+            <Text style={s.placeholderTitle}>
+              {query ? 'No Matches' : 'No Cards Yet'}
+            </Text>
             <Text style={s.placeholderSubtitle}>
-              Tap the + button to create your first task list.
+              {query
+                ? 'No cards match your search.'
+                : 'Tap the + button to create your first task list.'}
             </Text>
           </View>
         ) : (
@@ -280,7 +287,7 @@ export default function DashboardScreen({ navigation }: Props) {
   );
 }
 
-const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
+const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -288,16 +295,32 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
     },
     header: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: 20,
-      paddingVertical: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
       backgroundColor: colors.headerBg,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
+      gap: 10,
     },
-    headerLeft: { flexDirection: 'row', alignItems: 'center' },
-    headerRight: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    // ── Search ──
+    searchWrap: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.muted,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      height: 40,
+    },
+    searchIcon: { fontSize: 14, marginRight: 6 },
+    searchInput: {
+      flex: 1,
+      fontSize: 15,
+      color: colors.text,
+      padding: 0,
+    },
+    // ── Bell ──
     bellButton: { position: 'relative', padding: 4 },
     bellIcon: { fontSize: 20 },
     bellBadge: {
@@ -313,10 +336,17 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       paddingHorizontal: 4,
     },
     bellBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-    brand: { fontSize: 20, fontWeight: '700', color: colors.text },
-    signOut: { fontSize: 14, color: colors.danger, fontWeight: '500' },
-    greetingRow: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 4 },
-    greeting: { fontSize: 14, color: colors.subtext },
+    // ── Avatar ──
+    avatar: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    avatarLabel: { color: '#fff', fontSize: 16, fontWeight: '700' },
+    // ── Section ──
     sectionTitle: {
       width: '100%',
       fontSize: 13,
@@ -328,6 +358,7 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       paddingTop: 12,
       paddingBottom: 6,
     },
+    // ── Body ──
     bodyWrap: { flex: 1 },
     gridContent: { paddingHorizontal: 16, paddingBottom: 100 },
     center: {
@@ -351,6 +382,7 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
     },
     errorText: { color: colors.danger, fontSize: 14 },
     loadingText: { fontSize: 14, color: colors.placeholder },
+    // ── FAB ──
     fab: {
       position: 'absolute',
       bottom: 30,
@@ -365,6 +397,7 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       elevation: 6,
     },
     fabIcon: { fontSize: 30, color: '#fff', lineHeight: 32 },
+    // ── Modal ──
     modalOverlay: {
       flex: 1,
       backgroundColor: colors.modalBg,

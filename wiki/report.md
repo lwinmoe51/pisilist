@@ -1,5 +1,49 @@
 # Report — pisilist
 
+## [2026-06-19] Job: UI Rewrite — Match LAYOUT.md + frontend-design Standards
+
+**Status:** ✅ Success
+**Summary:** Rewrote Dashboard and CardDetail screens to match LAYOUT.md ASCII mockups exactly. Removed modal-based assignee/reminder flows in favor of inline dropdowns. Added search bar, user avatar navigation, and new Settings screen with dark mode toggle.
+
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `src/screens/SettingsScreen.tsx` | User profile, dark mode toggle (Switch), sign out — matches LAYOUT.md view #6 |
+| `wiki/plan_ui_layout_rewrite.md` | Design plan document |
+
+### Modified Files
+
+| File | Changes |
+|------|---------|
+| `src/screens/DashboardScreen.tsx` | 🔍 Search bar in header filters cards client-side by title; user avatar (first letter) navigates to Settings; removed greeting row; replaced "Sign Out" link with avatar; empty state shows "No Matches" for search. Header now matches LAYOUT.md: `= Search your lists... (User)` |
+| `src/screens/CardDetailScreen.tsx` | Inline assignee dropdown per task (tap "Unassigned ▾" opens list, tap option sets assignee); inline reminders per task with timestamps (⏰ Jun 20, 9:00 AM [✕]) and + Add Reminder with inline DateTimePicker; removed AssigneePicker and ReminderModal imports; invite modal preserved. Matches LAYOUT.md view #3 exactly. |
+| `src/navigation/AppNavigator.tsx` | Added `Settings` route with `SettingsScreen` component |
+
+### LAYOUT.md Fidelity
+
+| View | Match |
+|------|-------|
+| #1 Auth | Already matched (no change) |
+| #2 Dashboard | ✅ Search bar, bell + badge, avatar (was: greeting row + "Sign Out" text) |
+| #3 Card Detail | ✅ Inline assignee dropdown, inline reminders with timestamps + [✕], + Add Reminder (was: modal pickers) |
+| #4 Invitations | Already matched (no change) |
+| #5 Reminder Modal | Already matched (no change — still available for bulk edit) |
+| #6 Settings | ✅ New — Avatar, Name, Email, Dark Mode toggle, Sign Out |
+
+### Design Decisions (from frontend-design skill)
+- **Signature:** Each task row is a self-contained mini-dashboard — checkbox, text, inline assignee dropdown, inline reminders with timestamps and remove, delete — all visible without navigation
+- **No modal for primary actions:** Assignee and reminder management happen inline, keeping the user in context
+- **Dark mode:** Toggle uses system `Switch` component, persisted to AsyncStorage, immediate visual feedback
+
+### Test Results
+All 133 tests pass (9 suites). No regressions.
+
+### Errors
+None.
+
+---
+
 ## [2026-06-19] Job: Comprehensive API Contract Tests (133 tests, 9 suites)
 
 **Status:** ✅ Success
