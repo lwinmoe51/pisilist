@@ -1,5 +1,22 @@
 # Report — pisilist
 
+## [2026-06-19] Job: Clean Remaining shadow* Deprecation Warnings
+
+**Status:** ✅ Success
+**Summary:** Replaced remaining `shadowColor`/`shadowOffset`/`shadowOpacity`/`shadowRadius` props with `boxShadow` in `DashboardScreen.tsx` FAB button. Zero shadow* deprecation warnings now.
+
+### Changes
+- `src/screens/DashboardScreen.tsx` — FAB button style: `shadow*` → `boxShadow: '0 4px 8px rgba(26,115,232,0.35)'`
+- Verified no remaining `shadow*` usage in any `.tsx`/`.ts` source file.
+
+### Test Results
+All 55 tests pass (9 suites).
+
+### Errors
+None.
+
+---
+
 ## [2026-06-19] Job: Firestore Composite Indexes for Card Queries
 
 **Status:** ✅ Success
