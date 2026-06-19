@@ -1,5 +1,77 @@
 # Report — pisilist
 
+## [2026-06-19] Job: Comprehensive API Contract Tests (133 tests, 9 suites)
+
+**Status:** ✅ Success
+**Summary:** Rewrote all 5 service test suites as API contract tests that verify every Firebase/Expo SDK call — function, parameters, document shapes, batch sequences, and error handling. Upgraded from 55 shallow tests to 133 deep API contract tests.
+
+### Before vs After
+
+| Suite | Before | After | Delta |
+|-------|--------|-------|-------|
+| `auth.test.ts` | 5 shallow (mocked exports) | **25** — every function, param, error code | +20 |
+| `cards.test.ts` | 5 (docToCard/docToTask only) | **38** — full CRUD, queries, batch ops | +33 |
+| `users.test.ts` | 5 (export checks) | **12** — create/update/find-by-email/get-by-uid/batch | +7 |
+| `invitations.test.ts` | 6 (validation only) | **15** — send/accept/decline/listener + doc mapping | +9 |
+| `notifications.test.ts` | 7 (schedule/cancel) | **18** — full lifecycle, permissions, content verification | +11 |
+| **Total** | **28** | **108 service tests** | +80 |
+
+Plus existing: types (7), config (3), CardPreview (13), AuthContext (3) = 26 others
+**Grand total: 133 tests (was 55)**
+
+### Mock Infrastructure Upgraded
+
+| File | Change |
+|------|--------|
+| `__mocks__/firebase-firestore.ts` | All 18 exports now `jest.fn()` with `resetAllFirestoreMocks()` that calls `mockReset()` + re-applies defaults |
+| `__mocks__/firebase-auth.ts` | All 6 exports now `jest.fn()` with `resetAllAuthMocks()` + re-apply |
+| `__mocks__/firebase-app.ts` | All exports now `jest.fn()` with `resetAllAppMocks()` |
+| `__mocks__/expo-notifications.ts` | All 9 exports now `jest.fn()` with `resetAllNotificationsMocks()` |
+
+### What Each Test Suite Verifies
+
+**Auth (25 tests)**
+- signUp: calls createUserWithEmailAndPassword(auth, email, password); calls updateProfile with displayName; calls upsertUser; returns user on success; returns AuthError on failure; maps 4 known error codes + unknown fallback; no side-effects on failure
+- signIn: calls signInWithEmailAndPassword; returns user; maps 4 error codes
+- resetPassword: calls sendPasswordResetEmail; success/error returns
+- logOut: calls signOut; resolves; propagates errors
+
+**Cards (38 tests)**
+- createCard: addDoc on cards collection; doc shape (ownerId, collaborators:[], pinned:false, taskCount:0, completedCount:0); "Untitled" fallback; returns id
+- updateCard: updateDoc with card ref + {title/pinned, updatedAt}
+- deleteCard: getDocs tasks subcollection; batch-deletes all tasks + card; 0 tasks → only card deleted
+- createTask: max-order query; correct shape (text, completed:false, assignee:null, reminders:[], order=max+1); order starts 0 for empty; increments card taskCount; returns id
+- updateTask: updateDoc with {text, assignee}; null assignee OK
+- toggleTask: batch update task.completed + card.completedCount ±1
+- deleteTask: batch delete + decrement; also decrements completedCount if task was completed
+- addCollaborator: arrayUnion(userId) on card
+- updateTaskReminders: updateDoc {reminders}; empty array OK
+- Queries: ownedCardsQuery, collaboratedCardsQuery, tasksQuery — correct collection/where/orderBy
+- docToCard / docToTask: full conversion, defaults, null timestamps, plain Date, reminder timestamp conversion
+
+**Users (12 tests)**
+- upsertUser: getDoc check; creates new doc with uid/email/displayName/createdAt/updatedAt; merge-updates existing
+- findUserByEmail: where(email,'==',lowercase); null for not found; returns uid/email/displayName; empty defaults
+- getUserByUid: getDoc users/{uid}; null/result/defaults
+- getUsersByUids: parallel getDoc per uid; returns Map with found only; empty input → empty Map
+
+**Invitations (15 tests)**
+- sendInvitation: normalizes email; throws for unregistered user; throws for self-invite; doc shape (fromUserId, fromEmail, toEmail, cardId, cardTitle, status:'pending', createdAt); returns id
+- acceptInvitation: batch-updates invitation {status:'accepted'} + card {collaborators: arrayUnion}; correct doc refs
+- declineInvitation: updateDoc {status:'declined'}
+- onPendingInvitations: where('toEmail','==',email) + where('status','==','pending') + orderBy('createdAt','desc'); onSnapshot called; returns unsubscribe; doc→Invitation mapping verified; default field values
+
+**Notifications (18 tests)**
+- setupNotifications: setNotificationHandler foreground behavior; checks permissions; requests if denied; skips if granted; returns true/false
+- scheduleReminder: empty string for past; schedules for future; content (title, body, data, sound); DATE trigger; correct timestamp
+- cancelReminder: no-op for empty ID; calls cancelScheduledNotificationAsync
+- cancelAllRemindersForTask: cancels all non-empty IDs; filters empties; handles empty array
+
+### Errors
+None. All 133 tests pass. TypeScript compiles clean.
+
+---
+
 ## [2026-06-19] Job: Install frontend-design Plugin + Update Documentation
 
 **Status:** ✅ Success

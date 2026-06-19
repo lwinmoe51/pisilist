@@ -1,9 +1,22 @@
-/** Minimal mock of firebase/app for unit tests. */
+/**
+ * Spy-enhanced mock of firebase/app for API contract tests.
+ */
 
-export function initializeApp() {
-  return { name: 'mock-app' };
-}
+export const initializeApp = jest.fn((_config: any) => ({
+  name: 'mock-app',
+  options: _config,
+}));
 
-export function getApps() {
-  return [];
+export const getApps = jest.fn(() => []);
+
+/** Reset all mock call history and implementation chains between tests. */
+export function resetAllAppMocks(): void {
+  initializeApp.mockReset();
+  getApps.mockReset();
+
+  initializeApp.mockImplementation((_config: any) => ({
+    name: 'mock-app',
+    options: _config,
+  }));
+  getApps.mockReturnValue([]);
 }

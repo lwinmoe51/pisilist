@@ -13,20 +13,24 @@
 - ✅ Firestore security rules deployed (users, cards, tasks, invitations)
 - ✅ Firestore indexes deployed (invitations, cards owned, cards collaborated)
 - ✅ Firestore query split (owned + collaborated queries matching security rules)
-- ✅ Jest test suite (55 tests, 9 suites, all passing, 16% coverage)
-  - Services: auth (73%), cards (16%), users (73%), invitations (78%), notifications (74%)
-  - Components: CardPreview (100%)
-  - Contexts: AuthContext (88%)
-  - Config: firebase.ts (83%)
-  - Types: structural validation
 - ✅ Theme system (dark mode with light/dark palettes, 16 color tokens)
 - ✅ Responsive layout (web/mobile adaptive grid, max-width centering, capped modals)
 - ✅ Platform-aware DateTimePicker (native spinner on Android/iOS, HTML5 inputs on web)
 - ✅ shadow* deprecation cleanup (all boxShadow now, zero warnings)
-- ✅ frontline-design plugin installed (project-scoped UI/UX skill)
+- ✅ frontend-design plugin installed (project-scoped UI/UX skill)
+- ✅ Comprehensive API contract tests (133 tests, 9 suites, all passing)
+  - Auth: 25 — every Firebase Auth call, param, error mapping
+  - Cards: 38 — full CRUD, batch ops, queries, doc conversion
+  - Users: 12 — upsert/create/find-by-email/get-by-uid/batch
+  - Invitations: 15 — send/accept/decline/listener + Firestore doc mapping
+  - Notifications: 18 — full lifecycle, permissions, content/trigger verification
+  - Types: 7 — structural validation
+  - Config: 3 — Firebase init exports
+  - Components: CardPreview 13 (100%)
+  - Contexts: AuthContext 3 (88%)
 
 ## Pending
-- Write tests for remaining screens and components (AssigneePicker, ReminderModal, screens)
+- Write tests for AssigneePicker, ReminderModal, and screens
 - Test end-to-end on device
 - Deploy to app stores
 

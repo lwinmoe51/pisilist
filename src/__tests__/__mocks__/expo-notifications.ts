@@ -1,6 +1,7 @@
-/** Minimal mock of expo-notifications for unit tests. */
+/**
+ * Spy-enhanced mock of expo-notifications for API contract tests.
+ */
 
-// Avoid importing from the real module which pulls in native deps not available in Jest.
 export interface NotificationBehavior {
   shouldShowAlert: boolean;
   shouldPlaySound: boolean;
@@ -22,46 +23,73 @@ export const SchedulableTriggerInputTypes = {
 let handler: ((notification: any) => Promise<NotificationBehavior>) | null = null;
 let nextId = 0;
 
-export function setNotificationHandler(config: {
-  handleNotification: (notification: any) => Promise<NotificationBehavior>;
-}) {
-  handler = config.handleNotification;
-}
+export const setNotificationHandler = jest.fn(
+  (config: { handleNotification: (notification: any) => Promise<NotificationBehavior> }) => {
+    handler = config.handleNotification;
+  },
+);
 
-export function getNotificationHandler() {
-  return handler;
-}
+export const getNotificationHandler = jest.fn(() => handler);
 
-export async function getPermissionsAsync() {
-  return { status: 'granted', granted: true };
-}
+export const getPermissionsAsync = jest.fn(() =>
+  Promise.resolve({ status: 'granted', granted: true }),
+);
 
-export async function requestPermissionsAsync() {
-  return { status: 'granted', granted: true };
-}
+export const requestPermissionsAsync = jest.fn(() =>
+  Promise.resolve({ status: 'granted', granted: true }),
+);
 
-export async function setNotificationChannelAsync(
-  channelId: string,
-  config: any,
-) {
-  return null;
-}
+export const setNotificationChannelAsync = jest.fn(
+  (_channelId: string, _config: any) => Promise.resolve(null),
+);
 
-export async function scheduleNotificationAsync(config: any) {
+export const scheduleNotificationAsync = jest.fn((_config: any) => {
   nextId++;
-  return `notif-${nextId}`;
-}
+  return Promise.resolve(`notif-${nextId}`);
+});
 
-export async function cancelScheduledNotificationAsync(
-  notificationId: string,
-) {
-  // no-op
-}
+export const cancelScheduledNotificationAsync = jest.fn(
+  (_notificationId: string) => Promise.resolve(),
+);
 
-export async function cancelAllScheduledNotificationsAsync() {
-  // no-op
-}
+export const cancelAllScheduledNotificationsAsync = jest.fn(() =>
+  Promise.resolve(),
+);
 
-export async function getScheduledNotificationsAsync() {
-  return [];
+export const getScheduledNotificationsAsync = jest.fn(() =>
+  Promise.resolve([]),
+);
+
+/** Reset all mock call history and implementation chains between tests. */
+export function resetAllNotificationsMocks(): void {
+  handler = null;
+  nextId = 0;
+
+  setNotificationHandler.mockReset();
+  getNotificationHandler.mockReset();
+  getPermissionsAsync.mockReset();
+  requestPermissionsAsync.mockReset();
+  setNotificationChannelAsync.mockReset();
+  scheduleNotificationAsync.mockReset();
+  cancelScheduledNotificationAsync.mockReset();
+  cancelAllScheduledNotificationsAsync.mockReset();
+  getScheduledNotificationsAsync.mockReset();
+
+  // Re-apply defaults
+  setNotificationHandler.mockImplementation(
+    (config: { handleNotification: (notification: any) => Promise<NotificationBehavior> }) => {
+      handler = config.handleNotification;
+    },
+  );
+  getNotificationHandler.mockImplementation(() => handler);
+  getPermissionsAsync.mockResolvedValue({ status: 'granted', granted: true });
+  requestPermissionsAsync.mockResolvedValue({ status: 'granted', granted: true });
+  setNotificationChannelAsync.mockResolvedValue(null);
+  scheduleNotificationAsync.mockImplementation((_config: any) => {
+    nextId++;
+    return Promise.resolve(`notif-${nextId}`);
+  });
+  cancelScheduledNotificationAsync.mockResolvedValue(undefined);
+  cancelAllScheduledNotificationsAsync.mockResolvedValue(undefined);
+  getScheduledNotificationsAsync.mockResolvedValue([]);
 }
