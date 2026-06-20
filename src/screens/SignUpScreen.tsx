@@ -32,16 +32,20 @@ export default function SignUpScreen({ navigation }: Props) {
   const formWidth = isWeb ? Math.min(width - 64, FORM_MAX_WIDTH) : width - 64;
 
   const handleSignUp = async () => {
+    const alert = (title: string, msg: string) => {
+      Platform.OS === 'web' ? window.alert(`${title}\n\n${msg}`) : Alert.alert(title, msg);
+    };
+
     if (!email.trim() || !password || !confirmPassword) {
-      Alert.alert('Missing fields', 'Please fill in all fields.');
+      alert('Missing fields', 'Please fill in all fields.');
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Weak password', 'Password must be at least 6 characters.');
+      alert('Weak password', 'Password must be at least 6 characters.');
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Mismatch', 'Passwords do not match.');
+      alert('Mismatch', 'Passwords do not match.');
       return;
     }
 
@@ -51,7 +55,7 @@ export default function SignUpScreen({ navigation }: Props) {
     setLoading(false);
 
     if (error) {
-      Alert.alert('Sign up failed', error.message);
+      alert('Sign up failed', error.message);
     }
   };
 

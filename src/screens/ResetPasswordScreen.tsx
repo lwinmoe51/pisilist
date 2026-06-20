@@ -31,15 +31,19 @@ export default function ResetPasswordScreen({ navigation }: Props) {
   const formWidth = isWeb ? Math.min(width - 64, FORM_MAX_WIDTH) : width - 64;
 
   const handleReset = async () => {
+    const alert = (title: string, msg: string) => {
+      Platform.OS === 'web' ? window.alert(`${title}\n\n${msg}`) : Alert.alert(title, msg);
+    };
+
     if (!email.trim()) {
-      Alert.alert('Missing email', 'Please enter your email address.');
+      alert('Missing email', 'Please enter your email address.');
       return;
     }
     setLoading(true);
     const { success, error } = await resetPassword(email.trim());
     setLoading(false);
     if (error) {
-      Alert.alert('Reset failed', error.message);
+      alert('Reset failed', error.message);
     } else {
       setSent(true);
     }

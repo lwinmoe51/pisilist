@@ -31,15 +31,19 @@ export default function LoginScreen({ navigation }: Props) {
   const formWidth = isWeb ? Math.min(width - 64, FORM_MAX_WIDTH) : width - 64;
 
   const handleLogin = async () => {
+    const alert = (title: string, msg: string) => {
+      Platform.OS === 'web' ? window.alert(`${title}\n\n${msg}`) : Alert.alert(title, msg);
+    };
+
     if (!email.trim() || !password) {
-      Alert.alert('Missing fields', 'Please enter both email and password.');
+      alert('Missing fields', 'Please enter both email and password.');
       return;
     }
     setLoading(true);
     const { error } = await signIn(email.trim(), password);
     setLoading(false);
     if (error) {
-      Alert.alert('Login failed', error.message);
+      alert('Login failed', error.message);
     }
   };
 
