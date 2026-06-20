@@ -1,5 +1,125 @@
 # Report — pisilist
 
+## [2026-06-20] Session Report: Grid Fixes, Masonry, Popover, Notifications, Pin/Unpin Lifecycle
+
+**Status:** ✅ Success
+**Summary:** Fixed 6 bugs and implemented 3 features across DashboardScreen, CardPreview, notifications service, and CardsContext. All 133 tests pass.
+
+---
+
+### Bug #1: Masonry Grid Asymmetric Gaps
+
+**Symptom:** Cards shifted randomly left and right, creating awkward empty patches in the grid.
+
+**Root Cause:** Pinned and others cards were mixed into one `allCards` array, distributed to columns together, then filtered per section during render. If column 0 had 3 pinned + 1 other but column 1 had 1 pinned + 3 others, the pinned section showed uneven columns.
+
+**Fix:** Distribute each section independently with strict left-to-right round-robin:
+```typescript
+pinned.forEach((card, i) => { cols[i % columns].push(card); });
+others.forEach((card, i) => { cols[i % columns].push(card); });
+```
+Removed `estimateCardHeight` function (no longer needed).
+
+**File:** `src/screens/DashboardScreen.tsx`
+
+---
+
+### Bug #2: Color Picker Full-Screen Modal Blocked Dashboard
+
+**Symptom:** Clicking the color button opened a full-screen dark overlay modal, blocking all dashboard interaction.
+
+**Root Cause:** Color picker used `<Modal transparent>` which renders at root level with a full-screen backdrop.
+
+**Fix:** Replaced Modal with lightweight absolute popover within the card wrapper:
+- 🎨 emoji button in footer strip (replaced color dot)
+- Popover renders at `bottom: 36, left: 0` relative to card
+- Scrim backdrop only covers card area (tap to dismiss)
+- 28px color swatches in horizontal row
+- No layout shift, stays fixed to card during scroll
+
+**File:** `src/components/CardPreview.tsx`
+
+---
+
+### Bug #3: expo-notifications Crash on Web
+
+**Symptom:** `UnavailabilityError: The method or property Notifications.scheduleNotificationAsync is not available on web`
+
+**Root Cause:** `expo-notifications` is native-only (Android/iOS). `scheduleNotificationAsync` doesn't exist on web platform.
+
+**Fix:** Added `Platform.OS === 'web'` checks to all 4 notification functions:
+- `setupNotifications` → requests browser `Notification` permission on web
+- `scheduleReminder` → uses `setTimeout` + browser `new Notification()` on web
+- `cancelReminder` → clears `setTimeout` on web
+- `cancelAllRemindersForTask` → clears all timers on web
+
+Web reminders now work via browser Notification API with `setTimeout` for scheduling.
+
+**File:** `src/services/notifications.ts`
+
+---
+
+### Bug #4: Pin Action Didn't Control Sort Position
+
+**Symptom:** Pinning a card from "Others" caused it to jump to a random position in "Pinned" instead of appending to the end.
+
+**Root Cause:** `updateCardCosmetic` didn't set `updatedAt` on pin/unpin, so the card kept its old timestamp and sorted unpredictably.
+
+**Fix:** `updateCardCosmetic` now sets `updatedAt = serverTimestamp()` when `data.pinned !== undefined`:
+- **Pin:** fresh timestamp → sorts to END of Pinned (ascending)
+- **Unpin:** fresh timestamp → sorts to TOP of Others (descending)
+- **Color only:** no timestamp → no reorder
+
+**File:** `src/services/cards.ts`
+
+---
+
+### Bug #5: Sorting Logic Didn't Match Google Keep Behavior
+
+**Symptom:** Both Pinned and Others sections sorted the same way (descending). Newly pinned cards appeared at the top of Pinned instead of the end.
+
+**Root Cause:** `CardsContext` used a single sort: pinned first, then all descending.
+
+**Fix:** Partition into separate arrays with different sort orders:
+```typescript
+// Pinned: ascending (oldest first → new pins go to END)
+pinnedCards.sort((a, b) => a.updatedAt - b.updatedAt);
+
+// Others: descending (newest first → unpins go to TOP)
+otherCards.sort((a, b) => b.updatedAt - a.updatedAt);
+```
+
+**File:** `src/contexts/CardsContext.tsx`
+
+---
+
+### Bug #6: "No tasks yet" on Cards With Tasks
+
+**Symptom:** Cards with tasks showed hardcoded "No tasks yet" instead of actual task names.
+
+**Root Cause:** DashboardScreen had no task data — only `taskCount`/`completedCount` from the card document. The `uncheckedTasks` prop was always empty.
+
+**Fix:** Added real-time `onSnapshot` listener per card in DashboardScreen. Subscribes to each card's tasks subcollection, extracts unchecked task text, stores in `Map<cardId, CardTasks>`. Passes real task names to CardPreview.
+
+**File:** `src/screens/DashboardScreen.tsx`
+
+---
+
+### Files Changed (6 files)
+
+| File | Changes |
+|------|---------|
+| `src/screens/DashboardScreen.tsx` | Masonry: separate pinned/others column distribution. Task listeners per card. |
+| `src/components/CardPreview.tsx` | Color picker: absolute popover with 🎨 button. Removed Modal import. |
+| `src/services/notifications.ts` | Web fallback: setTimeout + browser Notification API. Platform checks on all functions. |
+| `src/services/cards.ts` | updateCardCosmetic: sets updatedAt on pin/unpin, not on color change. |
+| `src/contexts/CardsContext.tsx` | Sort: pinned ascending, others descending by updatedAt. |
+
+### Test Results
+All 133 tests pass (9 suites). No regressions.
+
+---
+
 ## [2026-06-20] Job: Dashboard Grid Overhaul + Card Inline Controls + Flat Design
 
 **Status:** ✅ Success

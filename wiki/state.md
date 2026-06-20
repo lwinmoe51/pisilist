@@ -5,25 +5,30 @@
 - ✅ Authentication flow (email/password sign-up, login, password reset)
 - ✅ Navigation (auth-gated stack navigator)
 - ✅ Card & Task CRUD (create cards, add tasks, toggle/delete)
-- ✅ Card grid UI (Google Keep-style responsive grid with pinned/others sections)
+- ✅ Card grid UI (Masonry staggered grid, responsive 1/2/3/4 columns)
 - ✅ Collaboration (invite by email, accept/decline, shared cards on dashboard)
 - ✅ Granular Task Assignment (per-task assignee picker, collaborator avatars)
-- ✅ Multi-Reminder System (platform-aware DateTimePicker, expo-notifications scheduling)
+- ✅ Multi-Reminder System (platform-aware: expo-notifications on native, browser Notification API on web)
 - ✅ Firebase project: pisilist-app (Firestore + Auth provisioned)
 - ✅ Firestore security rules deployed (users, cards, tasks, invitations)
 - ✅ Firestore indexes deployed (invitations, cards owned, cards collaborated)
 - ✅ Firestore query split (owned + collaborated queries matching security rules)
-- ✅ Theme system (dark mode with light/dark palettes, 18 color tokens)
-- ✅ Responsive layout (web/mobile adaptive grid, max-width centering, capped modals)
-- ✅ Platform-aware DateTimePicker (native spinner on Android/iOS, HTML5 inputs on web)
+- ✅ Theme system (dark mode with light/dark palettes, 18 color tokens + 8 accent colors)
+- ✅ Responsive layout (masonry grid, max-width centering, capped modals)
 - ✅ shadow* deprecation cleanup (all boxShadow now, zero warnings)
 - ✅ frontend-design plugin installed (project-scoped UI/UX skill)
 - ✅ Comprehensive API contract tests (133 tests, 9 suites, all passing)
-- ✅ LAYOUT.md matching rewrite — Dashboard search + avatar, CardDetail inline assignee + reminders, SettingsScreen with dark mode toggle
+- ✅ LAYOUT.md matching rewrite — Dashboard search + avatar, CardDetail inline assignee + reminders, SettingsScreen
 - ✅ Keep-style UI rewrite — All 7 tasks complete (T41-T47)
 - ✅ Cross-platform ConfirmModal component (replaces Alert.alert and window.confirm)
 - ✅ Full console logging on all UI handlers and Firebase service functions
 - ✅ WSL networking fix (web:wsl script for Expo on WSL2)
+- ✅ Masonry grid — strict left-to-right dense packing per section
+- ✅ Color picker — lightweight contextual popover (not full-screen modal)
+- ✅ Web notifications — browser Notification API fallback for reminders
+- ✅ Pin/Unpin sort lifecycle — predictable section ordering (pinned ascending, others descending)
+- ✅ Real task preview — live Firestore task listeners show actual uncompleted task names
+- ✅ Card accent colors — 8 colors (light + dark) per card, 🎨 picker button
 
 ## In Progress
 - None
