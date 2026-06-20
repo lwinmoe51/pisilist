@@ -1,5 +1,22 @@
 # Report — pisilist
 
+## [2026-06-20] Job: Sign Out Fix + PisiList Logo
+
+**Status:** ✅ Success
+**Summary:** Fixed sign-out button not working on web (same Alert.alert bug), added PisiList logo to dashboard header.
+
+### Changes
+
+| File | Change |
+|------|--------|
+| `src/screens/SettingsScreen.tsx` | Replaced `Alert.alert` confirmation with `window.confirm` on web, promise-based `Alert.alert` on native. Added error handling. |
+| `src/screens/DashboardScreen.tsx` | Added "PisiList" logo text (bold, primary color) to the left of the search bar in header. |
+
+### Test Results
+All 133 tests pass (9 suites).
+
+---
+
 ## [2026-06-20] Session Report: Grid Fixes, Masonry, Popover, Notifications, Pin/Unpin Lifecycle
 
 **Status:** ✅ Success
