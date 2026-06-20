@@ -253,6 +253,7 @@ export default function DashboardScreen({ navigation }: Props) {
     <View style={[s.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={s.header}>
+        <Text style={s.logo}>PisiList</Text>
         <View style={s.searchWrap}>
           <Text style={s.searchIcon}>🔍</Text>
           <TextInput
@@ -458,6 +459,12 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       backgroundColor: colors.headerBg,
       boxShadow: colors.headerShadow,
       gap: 10,
+    },
+    logo: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: colors.primary,
+      letterSpacing: 0.5,
     },
     searchWrap: {
       flex: 1,
