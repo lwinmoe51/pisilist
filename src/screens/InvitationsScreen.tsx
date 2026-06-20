@@ -15,6 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useInvitations } from '../contexts/InvitationsContext';
 import { useTheme } from '../theme/ThemeContext';
 import { acceptInvitation, declineInvitation } from '../services/invitations';
+import Toast, { type ToastType } from '../components/Toast';
 import type { Invitation } from '../types';
 
 interface Props {
@@ -31,6 +32,17 @@ export default function InvitationsScreen({ navigation }: Props) {
   const { width } = useWindowDimensions();
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
+  // Toast state
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<ToastType>('success');
+
+  const showToast = (msg: string, type: ToastType = 'success') => {
+    setToastMessage(msg);
+    setToastType(type);
+    setToastVisible(true);
+  };
+
   const isWeb = Platform.OS === 'web';
   const contentMaxW = isWeb ? Math.min(width, MAX_CONTENT_WIDTH) : width;
 
@@ -41,10 +53,10 @@ export default function InvitationsScreen({ navigation }: Props) {
     try {
       await acceptInvitation(inv.id, user.uid, inv.cardId);
       console.log('[UI] handleAccept SUCCESS');
+      showToast(`Accepted "${inv.cardTitle}" — it's now on your dashboard`, 'success');
     } catch (err: any) {
       console.error('[UI] handleAccept FAILED:', err);
-      const msg = err.message || 'Failed to accept invitation.';
-      Platform.OS === 'web' ? window.alert(`Error\n\n${msg}`) : Alert.alert('Error', msg);
+      showToast(err.message || 'Failed to accept invitation.', 'error');
     }
     setProcessingIds((prev) => {
       const next = new Set(prev);
@@ -59,10 +71,10 @@ export default function InvitationsScreen({ navigation }: Props) {
     try {
       await declineInvitation(inv.id);
       console.log('[UI] handleDecline SUCCESS');
+      showToast(`Declined "${inv.cardTitle}"`, 'info');
     } catch (err: any) {
       console.error('[UI] handleDecline FAILED:', err);
-      const msg = err.message || 'Failed to decline invitation.';
-      Platform.OS === 'web' ? window.alert(`Error\n\n${msg}`) : Alert.alert('Error', msg);
+      showToast(err.message || 'Failed to decline invitation.', 'error');
     }
     setProcessingIds((prev) => {
       const next = new Set(prev);
@@ -134,6 +146,14 @@ export default function InvitationsScreen({ navigation }: Props) {
           />
         )}
       </View>
+
+      {/* Toast */}
+      <Toast
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+        onDismiss={() => setToastVisible(false)}
+      />
     </View>
   );
 }

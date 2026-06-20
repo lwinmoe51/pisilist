@@ -1,5 +1,41 @@
 # Report — pisilist
 
+## [2026-06-20] Job: Toast Notification System for Invitation Lifecycle
+
+**Status:** ✅ Success
+**Summary:** Implemented a reusable Toast component with success/error/info variants and auto-dismiss. Applied to all 3 invitation operations (send, accept, decline) with full try/catch error handling and console logging.
+
+### New Component: `src/components/Toast.tsx`
+
+| Feature | Detail |
+|---------|--------|
+| Variants | `success` (green), `error` (red), `info` (blue) |
+| Animation | Fade in + slide down, auto-dismiss after 3s |
+| Position | Fixed top of screen, z-index 9999 |
+| Icon | Circle with ✓/✕/ℹ |
+| Platform | Works on web + native (Animated API) |
+
+### Toast Messages
+
+| Operation | Success | Error |
+|-----------|---------|-------|
+| Send invite | `"Invitation sent to {email}"` | Firebase error message |
+| Accept invite | `"Accepted "{cardTitle}" — it's now on your dashboard"` | Firebase error message |
+| Decline invite | `"Declined "{cardTitle}"` | Firebase error message |
+
+### Files Changed
+
+| File | Changes |
+|------|---------|
+| `src/components/Toast.tsx` | **NEW** — Reusable toast component |
+| `src/screens/CardDetailScreen.tsx` | Import Toast, add toast state, replace Alert.alert in handleInvite |
+| `src/screens/InvitationsScreen.tsx` | Import Toast, add toast state, replace Alert.alert in handleAccept/handleDecline |
+
+### Test Results
+All 133 tests pass (9 suites).
+
+---
+
 ## [2026-06-20] Job: Fix Invitation Acceptance Workflow + Firestore Rules
 
 **Status:** ✅ Success

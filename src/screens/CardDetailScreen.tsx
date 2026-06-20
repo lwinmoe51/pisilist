@@ -37,6 +37,7 @@ import { scheduleReminder, cancelReminder } from '../services/notifications';
 import { db } from '../config/firebase';
 import DateTimePicker from '../components/DateTimePicker';
 import ConfirmModal from '../components/ConfirmModal';
+import Toast, { type ToastType } from '../components/Toast';
 import type { Card, Task, Reminder } from '../types';
 
 interface Props {
@@ -72,6 +73,17 @@ export default function CardDetailScreen({ navigation, route }: Props) {
   const [confirmTitle, setConfirmTitle] = useState('');
   const [confirmMessage, setConfirmMessage] = useState('');
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+
+  // Toast state
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<ToastType>('success');
+
+  const showToast = (msg: string, type: ToastType = 'success') => {
+    setToastMessage(msg);
+    setToastType(type);
+    setToastVisible(true);
+  };
 
   // Per-task inline state
   const [expandAssign, setExpandAssign] = useState<string | null>(null); // task id
@@ -226,10 +238,10 @@ export default function CardDetailScreen({ navigation, route }: Props) {
       await sendInvitation(user.uid, user.email, { toEmail: email, cardId, cardTitle: card.title });
       console.log('[UI] handleInvite SUCCESS');
       setInviteVisible(false); setInviteEmail('');
-      Alert.alert('Sent', `Invitation sent to ${email}.`);
+      showToast(`Invitation sent to ${email}`, 'success');
     } catch (err: any) {
       console.error('[UI] handleInvite FAILED:', err);
-      Alert.alert('Error', err.message || String(err));
+      showToast(err.message || 'Failed to send invitation.', 'error');
     }
     setInviting(false);
   };
@@ -492,6 +504,14 @@ export default function CardDetailScreen({ navigation, route }: Props) {
         message={confirmMessage}
         onConfirm={handleConfirm}
         onCancel={handleConfirmCancel}
+      />
+
+      {/* Toast */}
+      <Toast
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+        onDismiss={() => setToastVisible(false)}
       />
     </View>
   );
