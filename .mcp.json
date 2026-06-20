@@ -11,8 +11,8 @@
       "description": "GitHub MCP server for repository operations — branches, commits, PRs, issues"
     },
     "context7": {
-      "type": "plugin",
-      "plugin": "context7@claude-plugins-official",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
       "description": "Context7 MCP server for up-to-date library/API documentation lookups (React Native, Expo, Firebase SDK)"
     }
   },

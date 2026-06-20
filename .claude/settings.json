@@ -1,15 +1,14 @@
 {
-  "enabledPlugins": {
-    "context7@claude-plugins-official": true,
-    "github@claude-plugins-official": true,
-    "firebase@claude-plugins-official": true,
-    "expo@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true
-  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "firebase",
     "github",
     "context7"
   ],
-  "enableAllProjectMcpServers": true
+  "enabledPlugins": {
+    "github@claude-plugins-official": true,
+    "firebase@claude-plugins-official": true,
+    "expo@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  }
 }
