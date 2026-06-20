@@ -1,60 +1,62 @@
-# Code Flowchart -- pisilist
+# Code Flowchart — pisilist
 
-> Updated: 2026-06-20 (Session complete — Keep-style rewrite done, ConfirmModal added, full logging, WSL fix)
+> Last updated: 2026-06-20
 
-## Project -- pisilist-app (Firebase)
+## Project — pisilist-app (Firebase)
 
 - **Project ID:** pisilist-app
 - **Web App:** PisiList Web (1:579611680236:web:3ca7f2cf07be57ab0634c9)
+- **Hosting:** https://pisilist-app.web.app
 - **Console:** https://console.firebase.google.com/project/pisilist-app/overview
 
 ## Directory Structure
 
 ```
 pisilist/
-├── App.tsx                                  # SafeAreaProvider -> Auth -> Cards -> Invitations -> NavigationContainer
+├── App.tsx                                  # SafeAreaProvider → ThemeProvider → AuthProvider → CardsProvider → InvitationsProvider → NavigationContainer
 ├── index.ts                                 # registerRootComponent(App)
-├── firebase.json                            # Firebase config pointing to firestore.rules + indexes
-├── firestore.rules                          # Access rules: users, cards, tasks, invitations
-├── firestore.indexes.json                   # Composite indexes (invitations: toEmail + status + createdAt)
+├── firebase.json                            # Firestore rules + indexes + hosting config
+├── firestore.rules                          # Access rules: users, cards (with invitee self-add), tasks, invitations
+├── firestore.indexes.json                   # Composite indexes (cards: owner/collab, invitations: toEmail+status+createdAt)
 ├── jest.config.js                           # Jest preset (jest-expo), Firebase mocks, coverage thresholds
+├── .mcp.json                                # MCP servers: firebase, github, context7
 ├── src/
 │   ├── config/
 │   │   └── firebase.ts                      # Firebase init (pisilist-app), exports auth & db
 │   ├── services/
-│   │   ├── auth.ts                          # signUp (-> creates users/ doc), signIn, resetPassword, logOut
-│   │   ├── cards.ts                         # Card & Task CRUD, addCollaborator, updateTaskReminders, batch ops
-│   │   ├── users.ts                         # Firestore users/: upsertUser, findUserByEmail, getUserByUid, getUsersByUids
-│   │   ├── invitations.ts                   # send/accept/decline, onPendingInvitations real-time listener
-│   │   └── notifications.ts                 # expo-notifications: setup, scheduleReminder, cancelReminder
+│   │   ├── auth.ts                          # signUp, signIn, resetPassword, logOut (with error mapping)
+│   │   ├── cards.ts                         # Card & Task CRUD, updateCardCosmetic, batch ops, docToCard/docToTask
+│   │   ├── users.ts                         # upsertUser, findUserByEmail, getUserByUid, getUsersByUids
+│   │   ├── invitations.ts                   # sendInvitation, acceptInvitation (atomic batch), declineInvitation, onPendingInvitations
+│   │   └── notifications.ts                 # Platform-aware: expo-notifications (native) + setTimeout/browser Notification (web)
 │   ├── contexts/
 │   │   ├── AuthContext.tsx                   # AuthProvider + useAuth (onAuthStateChanged)
-│   │   ├── CardsContext.tsx                  # CardsProvider + useCards (dual onSnapshot, owner+collab)
-│   │   ├── InvitationsContext.tsx            # InvitationsProvider + useInvitations (onPendingInvitations)
-│   │   └── ThemeContext.tsx                  # ThemeProvider + useTheme (useColorScheme, AsyncStorage persistence)
+│   │   ├── CardsContext.tsx                  # CardsProvider + useCards (dual onSnapshot, pinned ascending, others descending)
+│   │   └── InvitationsContext.tsx            # InvitationsProvider + useInvitations (onPendingInvitations)
 │   ├── components/
-│   │   ├── CardPreview.tsx                  # Keep-style card: shadow-only (no border), checkbox preview items, shared indicator
+│   │   ├── CardPreview.tsx                  # Masonry card: flat design, 1px border, accent color, footer strip (pin 🎨 ⋮), task preview, ellipsis menu, color popover
 │   │   ├── AssigneePicker.tsx               # Bottom sheet: pick collaborator for per-task assignment
-│   │   ├── ConfirmModal.tsx                 # Cross-platform confirmation modal (replaces Alert.alert on web)
-│   │   ├── DateTimePicker.tsx               # Platform-aware DateTimePicker (native/HTML5)
-│   │   └── ReminderModal.tsx               # DateTimePicker: add/remove per-task reminders
+│   │   ├── ConfirmModal.tsx                 # Cross-platform confirmation modal (window.confirm on web, Alert.alert on native)
+│   │   ├── DateTimePicker.tsx               # Platform-aware: HTML5 inputs on web, native spinner on Android/iOS
+│   │   ├── ReminderModal.tsx                # DateTimePicker wrapper: add/remove per-task reminders
+│   │   └── Toast.tsx                        # Animated toast notification (success/error/info, auto-dismiss 3s)
 │   ├── screens/
-│   │   ├── LoginScreen.tsx                  # Email/password login form (needs shadow input update T45)
-│   │   ├── SignUpScreen.tsx                 # Registration form with confirm password (needs T45)
-│   │   ├── ResetPasswordScreen.tsx          # Password reset request -> confirmation UI (needs T45)
-│   │   ├── DashboardScreen.tsx              # Keep-style grid: search bar, bell badge, avatar, headerShadow (T43 partial)
-│   │   ├── CardDetailScreen.tsx             # Full card: title, inline assignee, inline reminders with timestamps (needs T44)
-│   │   ├── InvitationsScreen.tsx            # Pending invitations: accept/decline (needs T46)
-│   │   └── SettingsScreen.tsx               # User profile, dark mode toggle, sign out (NEW -- LAYOUT.md view #6)
+│   │   ├── LoginScreen.tsx                  # Email/password login form (shadow inputs, web-compatible alerts)
+│   │   ├── SignUpScreen.tsx                 # Registration form with confirm password (web-compatible alerts)
+│   │   ├── ResetPasswordScreen.tsx          # Password reset request → confirmation UI (web-compatible alerts)
+│   │   ├── DashboardScreen.tsx              # Masonry grid (1-4 cols), section labels, task listeners, card actions, toast feedback
+│   │   ├── CardDetailScreen.tsx             # Full card: title, inline assignee, inline reminders, invite modal, toast feedback
+│   │   ├── InvitationsScreen.tsx            # Pending invitations: accept/decline with toast feedback
+│   │   └── SettingsScreen.tsx               # User profile, dark mode toggle, sign out
 │   ├── navigation/
-│   │   └── AppNavigator.tsx                 # RootNavigator: AuthStack <-> AppStack (Dashboard, CardDetail, Invitations, Settings)
+│   │   └── AppNavigator.tsx                 # RootNavigator: AuthStack ↔ AppStack (Dashboard, CardDetail, Invitations, Settings)
 │   ├── theme/
-│   │   ├── colors.ts                        # AppColors interface + lightColors/darkColors (20 tokens including Keep-style additions)
-│   │   └── ThemeContext.tsx                 # ThemeProvider + useTheme hook
+│   │   ├── colors.ts                        # AppColors interface + lightColors/darkColors (18 tokens) + CARD_ACCENT_COLORS (8 per theme)
+│   │   └── ThemeContext.tsx                 # ThemeProvider + useTheme (useColorScheme, AsyncStorage persistence)
 │   ├── types/
-│   │   └── index.ts                         # Card, Task, Reminder, Invitation, AppUser
+│   │   └── index.ts                         # Card (with color field), Task, Reminder, Invitation, AppUser
 │   └── __tests__/
-│       ├── __mocks__/                       # Firebase module mocks (auth, app, firestore, async-storage)
+│       ├── __mocks__/                       # Firebase module mocks (auth, app, firestore, async-storage, expo-notifications)
 │       ├── services/
 │       │   ├── auth.test.ts                 # 25 API contract tests
 │       │   ├── cards.test.ts                # 38 API contract tests
@@ -65,13 +67,17 @@ pisilist/
 │       │   └── types.test.ts                # 7 structural type checks
 │       ├── config/
 │       │   └── firebase.test.ts             # 3 Firebase init export checks
+│       ├── contexts/
+│       │   └── AuthContext.test.tsx          # 3 AuthContext rendering tests
 │       └── components/
 │           └── CardPreview.test.tsx          # 13 rendering path tests (100% coverage)
 └── wiki/
-    ├── report.md                            # Job-by-job log
-    ├── state.md                             # Current project state
+    ├── report.md                            # Job-by-job log (all sessions)
+    ├── state.md                             # Current project state + roadmap
     ├── code_flowchart.md                    # This file
-    └── plan_ui_layout_rewrite.md            # Keep-style UI rewrite plan (T41-T47)
+    ├── plan_ui_layout_rewrite.md            # Keep-style UI rewrite plan
+    ├── plan_api_tests.md                    # API contract test plan
+    └── plan_ui_overhaul.md                  # Theme + responsive + DateTimePicker plan
 ```
 
 ## App Component Tree
@@ -79,10 +85,10 @@ pisilist/
 ```
 App.tsx
   └── SafeAreaProvider
-      └── ThemeProvider (useColorScheme + AsyncStorage)
+      └── ThemeProvider (useColorScheme + AsyncStorage persistence)
           └── AuthProvider (onAuthStateChanged)
-              └── CardsProvider (dual onSnapshot: ownedCardsQuery + collaboratedCardsQuery)
-                  └── InvitationsProvider (onPendingInvitations)
+              └── CardsProvider (dual onSnapshot: owned + collaborated, sorted: pinned asc, others desc)
+                  └── InvitationsProvider (onPendingInvitations real-time)
                       └── NavigationContainer
                           └── RootNavigator (AppNavigator.tsx)
                               ├── [unauthenticated] AuthStack
@@ -90,45 +96,52 @@ App.tsx
                               │   ├── SignUpScreen
                               │   └── ResetPasswordScreen
                               └── [authenticated] AppStack
-                                  ├── Dashboard (cards grid + search + bell + avatar)
-                                  ├── CardDetail/{cardId}
-                                  ├── Invitations
-                                  └── Settings
+                                  ├── DashboardScreen (masonry grid + search + bell + avatar + logo)
+                                  ├── CardDetail/{cardId} (tasks + invite + assign + reminders)
+                                  ├── Invitations (accept/decline + toast)
+                                  └── Settings (profile + dark mode + sign out)
 ```
 
 ## Data Flow
 
 ```
 Firebase Auth                          Firestore
-  onAuthStateChanged                     onSnapshot (ownedCardsQuery: where ownerId==uid, orderBy updatedAt desc)
-       |                                 onSnapshot (collaboratedCardsQuery: where collaborators array-contains uid, orderBy updatedAt desc)
+  onAuthStateChanged                     onSnapshot (ownedCardsQuery: where ownerId==uid)
+       |                                 onSnapshot (collaboratedCardsQuery: where collaborators array-contains uid)
        v                                          |
   AuthContext (user: AppUser | null)              v
-       |                                 CardsContext (cards: Card[], merge + dedupe + sort)
+       |                                 CardsContext (cards: merged, deduped, sorted)
+       |                                   pinned: ascending by updatedAt (oldest first)
+       |                                   others: descending by updatedAt (newest first)
        |                                          |
        ├──────────> AppNavigator <────────────────┤
        |            (auth gating)                  |
        |                                           v
        |                                   DashboardScreen
+       |                                     masonry grid (1-4 columns)
+       |                                     real-time task listeners per card
+       |                                     section labels (📌 Pinned / Others)
        |                                     search filter (client-side)
-       |                                     pinned / others sections
-       |                                     FlatList numColumns={2|3|4}
        |                                       |
        |                                       v
-       |                                   CardPreview (shadow-only, checkbox preview items)
+       |                                   CardPreview
+       |                                     flat design (1px border, accent color)
+       |                                     task preview (actual uncompleted names)
+       |                                     footer: pin toggle, 🎨 color picker, ⋮ menu
        |                                       |
        |        onPress(cardId) ───────────────┘
        v
   CardDetailScreen
-    tasksQuery onSnapshot (where cardId, orderBy order)
+    tasksQuery onSnapshot (orderBy order)
     inline assignee dropdown (per task)
-    inline reminders with timestamps + [✕] remove
+    inline reminder chips with timestamps + [✕] remove
     inline DateTimePicker (+ Add Reminder)
     invite collaborator modal
     confirm modal (delete card / delete task)
+    toast notifications (success/error)
 ```
 
-## Theme System (18 Color Tokens)
+## Theme System (18 Color Tokens + 8 Accent Colors)
 
 ```
 AppColors interface (src/theme/colors.ts)
@@ -153,42 +166,64 @@ AppColors interface (src/theme/colors.ts)
   │   checkboxBorder: '#c4c4' │   checkboxBorder: '#555'
   │   chipBg: '#f0f0f0'       │   chipBg: '#333333'
 
+CARD_ACCENT_COLORS (src/theme/colors.ts)
+  null (default), blue, red, yellow, green, purple, pink, teal
+  Light: '#e8f0fe', '#fce8e6', '#fef7e0', '#e6f4ea', '#f3e8fd', '#fce2db', '#e0f2f1'
+  Dark:  '#1a2744', '#3c1a1a', '#3d3520', '#1a3324', '#2a1a3d', '#3d1a2a', '#1a3330'
+
 ThemeContext (src/theme/ThemeContext.tsx)
-  useColorScheme() -> default mode
-  AsyncStorage('theme_mode') -> manual override
-  useTheme() -> { colors, mode, setMode }
+  useColorScheme() → default mode
+  AsyncStorage('theme_mode') → manual override
+  useTheme() → { colors, mode, setMode, isDark }
 ```
-
-## Keep-Style UI Rewrite -- Current State
-
-### Completed (All Tasks Done)
-
-| Task | Screen/Component | Change |
-|------|-----------------|--------|
-| T41 | `src/theme/colors.ts` | Added `cardShadow`, `headerShadow`, `checkboxBorder`, `chipBg` tokens. Removed unused `cardBorder`, `cardSharedBorder`. 18 tokens total. |
-| T42 | `src/components/CardPreview.tsx` | Border removed (`borderWidth: 0`), shadow-only cards. Mini checkboxes (16px) with `checkboxBorder` for unchecked, `primary` for checked fill. |
-| T43 | `src/screens/DashboardScreen.tsx` | Header uses `headerShadow`. FAB is flat (no boxShadow/elevation). Grid padding 8px, gap 8px. |
-| T44 | `src/screens/CardDetailScreen.tsx` | Checkboxes 22px with `checkboxBorder`. Reminder rows are chip containers with `chipBg` background, borderRadius 12. |
-| T45 | `LoginScreen.tsx`, `SignUpScreen.tsx`, `ResetPasswordScreen.tsx` | Input fields: `borderWidth: 0` + `boxShadow: cardShadow` (shadow-only inputs). |
-| T46 | `src/screens/InvitationsScreen.tsx` | Header uses `headerShadow`. Accept/decline buttons are pill-shaped (borderRadius 20), decline uses `chipBg`. |
-| T47 | Various | Removed `cardBorder`/`cardSharedBorder` tokens. Zero deprecated `shadow*` props in codebase. |
 
 ## Firestore Collections
 
 ```
 users/{uid}           -- email, displayName, uid, createdAt
-cards/{cardId}        -- title, ownerId, collaborators[], pinned, taskCount, completedCount
-cards/{cardId}/tasks/ -- text, completed, assignee, reminders[], order
-invitations/{id}      -- fromUserId, toEmail, cardId, cardTitle, status
+cards/{cardId}        -- title, ownerId, collaborators[], pinned, color, taskCount, completedCount, createdAt, updatedAt
+cards/{cardId}/tasks/ -- text, completed, assignee, reminders[], order, createdAt
+invitations/{id}      -- fromUserId, fromEmail, toEmail, cardId, cardTitle, status, createdAt
 ```
 
 ## Firestore Security Rules Summary
 
 ```
-users/{uid}         -- read: any auth user | create: own uid | update: own uid | delete: denied
-cards/{cardId}      -- read: owner+collabs | create: any auth (becomes owner) | update: owner+collabs (collabs can't change ownerId/collaborators) | delete: owner only
+users/{uid}         -- read: any auth | create: own uid | update: own uid | delete: denied
+cards/{cardId}      -- read: owner+collabs | create: any auth (becomes owner)
+                      update: owner+collabs OR any auth adding self to collaborators (size+1 check)
+                      delete: owner only
 tasks/{taskId}      -- all: inherits parent card access via get() lookup
-invitations/{id}    -- read: sender or recipient | create: any auth (must be sender) | update: recipient only (accept/decline) | delete: denied
+invitations/{id}    -- read: sender or recipient | create: sender only | update: recipient only | delete: denied
+```
+
+## Pin/Unpin Sort Lifecycle
+
+```
+PIN:
+  User taps 📌 → updateCardCosmetic({ pinned: true }) → sets updatedAt = now
+  → CardsContext sorts pinned ASCENDING → card goes to END of Pinned section
+
+UNPIN:
+  User taps 📍 → updateCardCosmetic({ pinned: false }) → sets updatedAt = now
+  → CardsContext sorts others DESCENDING → card goes to TOP of Others section
+
+COLOR CHANGE:
+  User picks color → updateCardCosmetic({ color }) → NO updatedAt update
+  → card stays in place (no reorder)
+```
+
+## Toast Notification System
+
+```
+Component: src/components/Toast.tsx
+  Variants: success (green), error (red), info (blue)
+  Animation: fade in + slide down, auto-dismiss after 3s
+  Position: fixed top, z-index 9999
+
+Usage:
+  CardDetailScreen → send invite success/error
+  InvitationsScreen → accept/decline success/error
 ```
 
 ## Test Coverage
@@ -197,32 +232,21 @@ invitations/{id}    -- read: sender or recipient | create: any auth (must be sen
 Test Suites: 9 passed, 9 total
 Tests:       133 passed, 133 total
 
-Services tested (API contract):
-  auth.ts           -- 25 tests (every function, param, error code)
-  cards.ts          -- 38 tests (full CRUD, batch ops, queries, doc conversion)
-  users.ts          -- 12 tests (upsert/create/find-by-email/get-by-uid/batch)
-  invitations.ts    -- 15 tests (send/accept/decline/listener + Firestore doc mapping)
-  notifications.ts  -- 18 tests (full lifecycle, permissions, content/trigger verification)
-
-Other:
-  types/index.ts         -- 7 tests (structural validation)
-  config/firebase.ts     -- 3 tests (init exports)
-  components/CardPreview -- 13 tests (100% coverage -- all rendering paths)
-  contexts/AuthContext   -- 3 tests (88% coverage)
-
+Services: 108 tests (auth: 25, cards: 38, users: 12, invitations: 15, notifications: 18)
+Types: 7 | Config: 3 | Components: 13 (CardPreview: 100%) | Contexts: 3 (AuthContext: 88%)
 Screens: 0% (require React Native Testing Library + Firebase mock setup)
-
-Console logging: Full request/response logging on all Firebase service functions
-and all UI event handlers (cards.ts, CardDetailScreen.tsx, DashboardScreen.tsx)
 ```
 
 ## Key Commands
 
 ```bash
-npm start               # Expo dev server
-npm run web             # Web target (local)
-npm run web:wsl         # Web target (WSL2 → Windows browser)
-npm test                # Run Jest (133 tests)
-npm run test:coverage   # Jest + coverage report
-npx tsc --noEmit        # TypeScript type-check
+npm run web              # Expo dev server (local)
+npm run web:wsl          # Expo dev server (WSL2 → Windows browser)
+npm test                 # Run Jest (133 tests)
+npm run test:coverage    # Jest + coverage report
+npx tsc --noEmit         # TypeScript type-check
+npx expo start           # Expo dev server (all platforms)
+npx expo export --platform web  # Build web export to dist/
+firebase deploy --only hosting  # Deploy to Firebase Hosting
+firebase deploy --only firestore:rules  # Deploy Firestore rules
 ```
