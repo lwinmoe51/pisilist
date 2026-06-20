@@ -5,5 +5,11 @@
     "firebase@claude-plugins-official": true,
     "expo@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true
-  }
+  },
+  "enabledMcpjsonServers": [
+    "firebase",
+    "github",
+    "context7"
+  ],
+  "enableAllProjectMcpServers": true
 }
