@@ -46,7 +46,7 @@ describe('CardPreview', () => {
     expect(screen.getByText('No tasks yet')).toBeTruthy();
   });
 
-  it('should show tasks remaining when there are unchecked tasks', async () => {
+  it('should show progress count and preview items when tasks exist', async () => {
     const card = makeCard();
     const screen = await renderWithTheme(
       <CardPreview
@@ -58,10 +58,11 @@ describe('CardPreview', () => {
       />,
     );
 
-    expect(screen.getByText('3 tasks remaining')).toBeTruthy();
+    expect(screen.getByText('2/5 done')).toBeTruthy();
+    expect(screen.getByText('+2 more items')).toBeTruthy();
   });
 
-  it('should show singular "task" when exactly 1 unchecked', async () => {
+  it('should show no "more items" when 3 or fewer tasks', async () => {
     const card = makeCard();
     const screen = await renderWithTheme(
       <CardPreview
@@ -73,10 +74,11 @@ describe('CardPreview', () => {
       />,
     );
 
-    expect(screen.getByText('1 task remaining')).toBeTruthy();
+    expect(screen.getByText('2/3 done')).toBeTruthy();
+    expect(screen.queryByText(/more items/)).toBeNull();
   });
 
-  it('should show completed count when > 0', async () => {
+  it('should show checked preview items with line-through style', async () => {
     const card = makeCard();
     const screen = await renderWithTheme(
       <CardPreview
@@ -88,7 +90,10 @@ describe('CardPreview', () => {
       />,
     );
 
-    expect(screen.getByText('3 checked')).toBeTruthy();
+    expect(screen.getByText('3/5 done')).toBeTruthy();
+    expect(screen.getByText('Completed item 1')).toBeTruthy();
+    expect(screen.getByText('Completed item 2')).toBeTruthy();
+    expect(screen.getByText('Completed item 3')).toBeTruthy();
   });
 
   it('should not show "No tasks yet" when tasks exist', async () => {

@@ -35,7 +35,7 @@ function getColumns(width: number, isWeb: boolean) {
 }
 
 const MAX_CONTENT_WIDTH = 1200;
-const GRID_GAP = 12;
+const GRID_GAP = 8;
 
 export default function DashboardScreen({ navigation }: Props) {
   const { user } = useAuth();
@@ -200,6 +200,7 @@ export default function DashboardScreen({ navigation }: Props) {
           </View>
         ) : (
           <FlatList
+            key={`grid-${columns}`}
             data={allData}
             renderItem={renderItem}
             keyExtractor={(item: any) =>
@@ -209,9 +210,9 @@ export default function DashboardScreen({ navigation }: Props) {
             columnWrapperStyle={
               allData.some((d: any) => d.type === 'pinned' || d.type === 'others')
                 ? undefined
-                : { justifyContent: 'space-between' as any, gap: GRID_GAP }
+                : { gap: GRID_GAP } as any
             }
-            contentContainerStyle={s.gridContent}
+            contentContainerStyle={[s.gridContent, { gap: GRID_GAP }]}
             refreshControl={<RefreshControl refreshing={loading} />}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
@@ -299,8 +300,7 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: nu
       paddingHorizontal: 12,
       paddingVertical: 10,
       backgroundColor: colors.headerBg,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
+      boxShadow: colors.headerShadow,
       gap: 10,
     },
     // ── Search ──
@@ -354,13 +354,17 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: nu
       color: colors.subtext,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
-      paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: 6,
+      paddingHorizontal: 12,
+      paddingTop: 10,
+      paddingBottom: 4,
     },
     // ── Body ──
     bodyWrap: { flex: 1 },
-    gridContent: { paddingHorizontal: 16, paddingBottom: 100 },
+    gridContent: {
+      paddingHorizontal: 8,
+      paddingTop: 8,
+      paddingBottom: 100,
+    },
     center: {
       flex: 1,
       justifyContent: 'center',
@@ -385,18 +389,16 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: nu
     // ── FAB ──
     fab: {
       position: 'absolute',
-      bottom: 30,
-      right: 24,
-      width: 60,
-      height: 60,
-      borderRadius: 30,
+      bottom: 24,
+      right: 20,
+      width: 56,
+      height: 56,
+      borderRadius: 16,
       backgroundColor: colors.primary,
       justifyContent: 'center',
       alignItems: 'center',
-      boxShadow: `0 4px 8px ${colors.primary}59`,
-      elevation: 6,
     },
-    fabIcon: { fontSize: 30, color: '#fff', lineHeight: 32 },
+    fabIcon: { fontSize: 28, color: '#fff', lineHeight: 30 },
     // ── Modal ──
     modalOverlay: {
       flex: 1,

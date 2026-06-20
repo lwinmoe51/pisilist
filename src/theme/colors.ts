@@ -12,10 +12,12 @@ export interface AppColors {
   placeholder: string;
   headerBg: string;
   modalBg: string;
-  cardBorder: string;
-  cardSharedBorder: string;
   inputBg: string;
   overlayBg: string;
+  cardShadow: string;
+  headerShadow: string;
+  checkboxBorder: string;
+  chipBg: string;
 }
 
 /** Light-mode color palette. */
@@ -32,10 +34,12 @@ export const lightColors: AppColors = {
   placeholder: '#999999',
   headerBg: '#ffffff',
   modalBg: 'rgba(0,0,0,0.5)',
-  cardBorder: '#e8e8e8',
-  cardSharedBorder: '#a8c8fa',
   inputBg: '#ffffff',
   overlayBg: 'rgba(0,0,0,0.5)',
+  cardShadow: '0 1px 2px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04)',
+  headerShadow: '0 1px 3px rgba(0,0,0,0.06)',
+  checkboxBorder: '#c4c4c4',
+  chipBg: '#f0f0f0',
 };
 
 /** Dark-mode color palette. */
@@ -52,8 +56,10 @@ export const darkColors: AppColors = {
   placeholder: '#777777',
   headerBg: '#1a1a1a',
   modalBg: 'rgba(0,0,0,0.7)',
-  cardBorder: '#333333',
-  cardSharedBorder: '#4da3ff',
   inputBg: '#2a2a2a',
   overlayBg: 'rgba(0,0,0,0.7)',
+  cardShadow: '0 1px 2px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2)',
+  headerShadow: '0 1px 3px rgba(0,0,0,0.4)',
+  checkboxBorder: '#555555',
+  chipBg: '#333333',
 };

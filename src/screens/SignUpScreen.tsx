@@ -127,8 +127,7 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       marginBottom: 30,
     },
     input: {
-      borderWidth: 1,
-      borderColor: colors.border,
+      borderWidth: 0,
       borderRadius: 8,
       paddingHorizontal: 14,
       paddingVertical: 12,
@@ -136,6 +135,7 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       marginBottom: 14,
       color: colors.text,
       backgroundColor: colors.inputBg,
+      boxShadow: colors.cardShadow,
     },
     button: {
       backgroundColor: colors.primary,
