@@ -1,11 +1,25 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
+const isWeb = Platform.OS === 'web';
+
+// Store active web reminder timeouts so we can cancel them
+const webTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
 /**
  * Configure notification behavior for the app.
  * Call once on app startup (from App.tsx or notifications service init).
  */
 export async function setupNotifications(): Promise<boolean> {
+  if (isWeb) {
+    // Request browser notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+    console.log('[notifications] Web: using browser Notification API');
+    return 'Notification' in window && Notification.permission === 'granted';
+  }
+
   // Configure how notifications are displayed when app is in foreground
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -47,6 +61,7 @@ export async function setupNotifications(): Promise<boolean> {
 /**
  * Schedule a local push notification for a task reminder.
  * Returns the notification identifier.
+ * On web, uses setTimeout + browser Notification API.
  */
 export async function scheduleReminder(
   taskId: string,
@@ -54,9 +69,28 @@ export async function scheduleReminder(
   taskText: string,
   timestamp: Date,
 ): Promise<string> {
-  // Don't schedule reminders in the past
   const now = new Date();
   if (timestamp <= now) return '';
+
+  if (isWeb) {
+    const id = `web-rem-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const delay = timestamp.getTime() - now.getTime();
+
+    console.log(`[notifications] Web: scheduling in ${Math.round(delay / 1000)}s —`, cardTitle);
+
+    const timer = setTimeout(() => {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`⏰ ${cardTitle}`, {
+          body: taskText,
+          icon: '/assets/icon.png',
+        });
+      }
+      webTimers.delete(id);
+    }, delay);
+
+    webTimers.set(id, timer);
+    return id;
+  }
 
   const id = await Notifications.scheduleNotificationAsync({
     content: {
@@ -82,16 +116,36 @@ export async function cancelReminder(
   notificationId: string,
 ): Promise<void> {
   if (!notificationId) return;
+
+  if (isWeb) {
+    const timer = webTimers.get(notificationId);
+    if (timer) {
+      clearTimeout(timer);
+      webTimers.delete(notificationId);
+    }
+    return;
+  }
+
   await Notifications.cancelScheduledNotificationAsync(notificationId);
 }
 
 /**
  * Cancel all scheduled reminders for a task.
- * Pass the notification IDs stored on the task's reminders.
  */
 export async function cancelAllRemindersForTask(
   notificationIds: string[],
 ): Promise<void> {
+  if (isWeb) {
+    notificationIds.forEach((id) => {
+      const timer = webTimers.get(id);
+      if (timer) {
+        clearTimeout(timer);
+        webTimers.delete(id);
+      }
+    });
+    return;
+  }
+
   await Promise.all(
     notificationIds
       .filter(Boolean)

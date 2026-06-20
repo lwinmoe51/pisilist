@@ -48,12 +48,18 @@ export function CardsProvider({ children }: { children: React.ReactNode }) {
     function mergeAndSort() {
       const merged = new Map([...ownedCards, ...collabCards]);
       const cards = Array.from(merged.values());
-      // pinned first, then by updatedAt desc
-      cards.sort((a, b) => {
-        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-        return b.updatedAt.getTime() - a.updatedAt.getTime();
-      });
-      setState({ cards, loading: false, error: null });
+
+      // Partition into pinned and others
+      const pinnedCards = cards.filter((c) => c.pinned);
+      const otherCards = cards.filter((c) => !c.pinned);
+
+      // Pinned: ascending by updatedAt (oldest first → newest at END)
+      pinnedCards.sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime());
+
+      // Others: descending by updatedAt (newest first → top of list)
+      otherCards.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+
+      setState({ cards: [...pinnedCards, ...otherCards], loading: false, error: null });
     }
 
     const unsubOwned = onSnapshot(

@@ -88,15 +88,23 @@ export async function updateCard(
   }
 }
 
-/** Update card cosmetic fields (color, pinned) WITHOUT touching updatedAt.
- *  This prevents cosmetic changes from reordering the card in the grid. */
+/** Update card cosmetic fields (color, pinned).
+ *  For pin/unpin, sets updatedAt to now so the card sorts correctly:
+ *  - Pin: new timestamp → sorts to END of pinned section (ascending)
+ *  - Unpin: fresh timestamp → sorts to TOP of others section (descending)
+ *  For color-only changes, does NOT touch updatedAt (no reorder). */
 export async function updateCardCosmetic(
   cardId: string,
   data: Partial<Pick<Card, 'pinned' | 'color'>>,
 ): Promise<void> {
   console.log('[cards.updateCardCosmetic] request:', { cardId, data });
   try {
-    await updateDoc(cardDoc(cardId), data);
+    const update: Record<string, any> = { ...data };
+    // Set timestamp on pin/unpin to control sort position
+    if (data.pinned !== undefined) {
+      update.updatedAt = serverTimestamp();
+    }
+    await updateDoc(cardDoc(cardId), update);
     console.log('[cards.updateCardCosmetic] success');
   } catch (err) {
     console.error('[cards.updateCardCosmetic] error:', err);
