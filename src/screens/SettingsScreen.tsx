@@ -36,17 +36,23 @@ export default function SettingsScreen({ navigation }: Props) {
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
   const email = user?.email || '';
 
-  const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: async () => {
-          await logOut();
-        },
-      },
-    ]);
+  const handleSignOut = async () => {
+    const confirmed = Platform.OS === 'web'
+      ? window.confirm('Are you sure you want to sign out?')
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+            { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Sign Out', style: 'destructive', onPress: () => resolve(true) },
+          ]);
+        });
+    if (confirmed) {
+      try {
+        await logOut();
+      } catch (err: any) {
+        console.error('[UI] handleSignOut FAILED:', err);
+        Alert.alert('Error', err.message || 'Failed to sign out.');
+      }
+    }
   };
 
   const s = themedStyles(colors);
