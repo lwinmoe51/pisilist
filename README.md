@@ -2,8 +2,14 @@
 
 **A minimal Google Keep-inspired collaborative task management app built with React Native, Expo, and Firebase.**
 
+## Live Demo
+
+Live Demo: **[https://pisilist-app.web.app](https://pisilist-app.web.app)**
+
+---
+
 > **Chapter 3 Assignment — Vibe Code Tours AI-Driven Software Development Bootcamp**
-> [vibecode.tours](https://vibecode.tours/) | Led by [Ko Ko Yee](https://github.com/kokoye2007)
+> [vibecode.tours](https://vibecode.tours/) | Lead by [Ko Ko Yee](https://github.com/kokoye2007)
 
 This project is the Chapter 3 Assignment for the Vibe Code Tours bootcamp, focusing on hands-on practical implementation of automated **Model Context Protocol (MCP)** environments, modular **AI Skills**, dedicated **Agents** and **Sub-agents**, and **LLM Wiki document systems**. It demonstrates the workflow methodology of precise AI prompt composition to achieve exact development architecture output — from initial specification through production deployment, entirely driven by structured AI collaboration.
 
@@ -11,7 +17,7 @@ This project is the Chapter 3 Assignment for the Vibe Code Tours bootcamp, focus
 
 ## Project Description
 
-PisiList was born from a real-world need: the creator's girlfriend works in a fast-paced environment where she needs to quickly assign tasks to coworkers and set **multiple granular push notification reminders** per item (2–3 distinct alerts per day per task). Existing tools like Trello, Todoist, or basic checklist apps either lack multi-reminder support, overwhelm users with feature bloat, or impose artificial constraints on reminder scheduling.
+PisiList was born from a real-world need: My girlfriend works in a fast-paced environment where she needs to quickly assign tasks to coworkers and set **multiple granular push notification reminders** per item (2–3 distinct alerts per day per task). Existing tools like Trello, Todoist, or basic checklist apps either lack multi-reminder support, overwhelm users with feature bloat, or impose artificial constraints on reminder scheduling.
 
 PisiList solves this with a **clean, clutter-free mobile interface** that focuses on three core actions:
 
@@ -25,24 +31,20 @@ The result is a lightweight, purpose-built tool that does exactly what's needed 
 
 ## MVP Features
 
-*(Please refer to the source codebase and `/wiki` directory documentation for live operational details.)*
-
-| Feature | Description |
-|---------|-------------|
-| Email/Password Auth | Sign-up, login, password reset via Firebase Auth |
-| Card & Task CRUD | Create cards, add/toggle/delete tasks with real-time sync |
-| Collaborative Lists | Invite by email, accept/decline, shared cards on dashboard |
-| Per-Task Assignment | Assign tasks to specific collaborators with inline picker |
+| Feature               | Description                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| Email/Password Auth   | Sign-up, login, password reset via Firebase Auth                                      |
+| Card & Task CRUD      | Create cards, add/toggle/delete tasks with real-time sync                             |
+| Collaborative Lists   | Invite by email, accept/decline, shared cards on dashboard                            |
+| Per-Task Assignment   | Assign tasks to specific collaborators with inline picker                             |
 | Multi-Reminder System | Multiple reminders per task — native push on Android/iOS, browser Notification on web |
-| Masonry Dashboard | Responsive staggered grid (1–4 columns) with pin/unpin and color accents |
-| Dark Mode | System-aware theme with manual toggle, 18 color tokens |
-| Cross-Platform | Web (browser), Android (Expo Go / dev build), iOS (dev build) |
+| Masonry Dashboard     | Responsive staggered grid (1–4 columns) with pin/unpin and color accents              |
+| Dark Mode             | System-aware theme with manual toggle, 18 color tokens                                |
+| Cross-Platform        | Web (browser), Android (Expo Go / dev build), iOS (dev build)                         |
 
 ---
 
 ## Upcoming Features
-
-*(Please refer to the source codebase and `/wiki` directory documentation for live operational details.)*
 
 - Profile picture upload and username editing
 - Password change for logged-in users
@@ -58,13 +60,11 @@ The result is a lightweight, purpose-built tool that does exactly what's needed 
 
 ## AI Framework Configurations (MCP, Skills, Agents)
 
-*(Please refer to the source codebase and `/wiki` directory documentation for live operational details.)*
-
-| Component | Purpose |
-|-----------|---------|
-| **MCP Servers** | Firebase (Firestore, Auth, Hosting), GitHub (commits, PRs), Context7 (library docs) |
-| **Agents** | `git_manager` (commits/PRs), `wiki_manager` (documentation), `test_manager` (Jest/coverage) |
-| **Skills** | `code_review` (API validation via Context7), `documentation` (API reference generation) |
+| Component       | Purpose                                                                                                  |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| **MCP Servers** | Firebase (Firestore, Auth, Hosting), GitHub (commits, PRs), Context7 (library docs)                      |
+| **Agents**      | `git_manager` (commits/PRs), `wiki_manager` (documentation), `test_manager` (Jest/coverage)              |
+| **Skills**      | `code_review` (API validation via Context7), `documentation` (API reference generation)                  |
 | **Wiki System** | `wiki/report.md` (session log), `wiki/state.md` (project state), `wiki/code_flowchart.md` (architecture) |
 
 ---
@@ -82,7 +82,7 @@ The result is a lightweight, purpose-built tool that does exactly what's needed 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/kokoye2007/pisilist.git
+git clone https://github.com/lwinmoe51/pisilist.git
 cd pisilist
 ```
 
@@ -148,15 +148,15 @@ firebase deploy --only firestore:rules --project pisilist-app
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React Native 0.85.3 + Expo SDK 56 |
-| Backend | Firebase (Firestore + Auth + Hosting) |
-| Navigation | React Navigation 7 (native stack) |
-| State | React Context + Firestore real-time listeners |
+| Layer         | Technology                                                   |
+| ------------- | ------------------------------------------------------------ |
+| Frontend      | React Native 0.85.3 + Expo SDK 56                            |
+| Backend       | Firebase (Firestore + Auth + Hosting)                        |
+| Navigation    | React Navigation 7 (native stack)                            |
+| State         | React Context + Firestore real-time listeners                |
 | Notifications | Expo Notifications (native) / Browser Notification API (web) |
-| Testing | Jest 29 + @testing-library/react-native 14 |
-| Language | TypeScript 6 |
+| Testing       | Jest 29 + @testing-library/react-native 14                   |
+| Language      | TypeScript 6                                                 |
 
 ---
 
@@ -181,18 +181,10 @@ pisilist/
 
 ---
 
-## Live Demo
-
-**https://pisilist-app.web.app**
-
----
-
 ## License
 
 MIT
 
----
-
 ## Acknowledgments
 
-Built as part of the [Vibe Code Tours](https://vibecode.tours/) AI-driven software development bootcamp — Chapter 3 Assignment, engineered by [Ko Ko Yee](https://github.com/kokoye2007).
+Built as part of the [Vibe Code Tours](https://vibecode.tours/) AI-driven software development bootcamp — Chapter 3 Assignment, mentor by [Ko Ko Yee](https://github.com/kokoye2007).
