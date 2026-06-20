@@ -230,22 +230,22 @@ export default function DashboardScreen({ navigation }: Props) {
     );
   }, [cards]);
 
-  // ── Masonry: distribute cards into columns by height ──
-  const masonryColumns = useMemo(() => {
+  // ── Masonry: strict left-to-right dense packing per section ──
+  const pinnedColumns = useMemo(() => {
     const cols: Card[][] = Array.from({ length: columns }, () => []);
-    const heights = new Array(columns).fill(0);
-
-    const allCards = [...pinned, ...others];
-    for (const card of allCards) {
-      const tasks = cardTasks.get(card.id);
-      const estHeight = estimateCardHeight(card, tasks);
-      const shortest = heights.indexOf(Math.min(...heights));
-      cols[shortest].push(card);
-      heights[shortest] += estHeight + GRID_GAP;
-    }
-
+    pinned.forEach((card, i) => {
+      cols[i % columns].push(card);
+    });
     return cols;
-  }, [pinned, others, cardTasks, columns]);
+  }, [pinned, columns]);
+
+  const othersColumns = useMemo(() => {
+    const cols: Card[][] = Array.from({ length: columns }, () => []);
+    others.forEach((card, i) => {
+      cols[i % columns].push(card);
+    });
+    return cols;
+  }, [others, columns]);
 
   const s = themedStyles(colors);
 
@@ -319,9 +319,9 @@ export default function DashboardScreen({ navigation }: Props) {
             )}
             {pinned.length > 0 && (
               <View style={s.masonryRow}>
-                {masonryColumns.map((col, colIdx) => (
+                {pinnedColumns.map((col, colIdx) => (
                   <View key={`pin-${colIdx}`} style={s.masonryCol}>
-                    {col.filter((c) => c.pinned).map((card) => (
+                    {col.map((card) => (
                       <CardPreview
                         key={card.id}
                         card={card}
@@ -347,9 +347,9 @@ export default function DashboardScreen({ navigation }: Props) {
             )}
             {others.length > 0 && (
               <View style={s.masonryRow}>
-                {masonryColumns.map((col, colIdx) => (
+                {othersColumns.map((col, colIdx) => (
                   <View key={`other-${colIdx}`} style={s.masonryCol}>
-                    {col.filter((c) => !c.pinned).map((card) => (
+                    {col.map((card) => (
                       <CardPreview
                         key={card.id}
                         card={card}
@@ -442,22 +442,6 @@ export default function DashboardScreen({ navigation }: Props) {
       />
     </View>
   );
-}
-
-/** Estimate card height for masonry layout. */
-function estimateCardHeight(card: Card, tasks?: CardTasks): number {
-  let h = 56; // title + padding
-  if (card.collaborators.length > 0) h += 18;
-  const count = tasks?.taskCount ?? 0;
-  if (count > 0) {
-    h += Math.min(count, 3) * 22; // task rows
-    if (count > 3) h += 16;
-  } else {
-    h += 18; // empty state
-  }
-  h += 20; // bottom row
-  h += 30; // footer strip
-  return h;
 }
 
 const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>

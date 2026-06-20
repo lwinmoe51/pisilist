@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   Platform,
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
@@ -128,10 +127,10 @@ export default function CardPreview({
 
           <TouchableOpacity
             style={s.footerBtn}
-            onPress={() => setColorPickerVisible(true)}
+            onPress={() => setColorPickerVisible(!colorPickerVisible)}
             activeOpacity={0.6}
           >
-            <View style={[s.colorDot, { backgroundColor: card.color || colors.border }]} />
+            <Text style={s.footerBtnIcon}>🎨</Text>
           </TouchableOpacity>
 
           <View style={s.footerSpacer} />
@@ -182,20 +181,16 @@ export default function CardPreview({
         </>
       )}
 
-      {/* Color picker overlay — centered modal */}
-      <Modal
-        visible={colorPickerVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setColorPickerVisible(false)}
-      >
-        <TouchableOpacity
-          style={s.colorOverlay}
-          activeOpacity={1}
-          onPress={() => setColorPickerVisible(false)}
-        >
-          <View style={[s.colorSheet, { width: Math.min(cardWidth + 40, 320) }]}>
-            <Text style={s.colorTitle}>Card Color</Text>
+      {/* Color picker popover — anchored below 🎨 button */}
+      {colorPickerVisible && (
+        <>
+          <TouchableOpacity
+            style={s.menuScrim}
+            activeOpacity={1}
+            onPress={() => setColorPickerVisible(false)}
+          />
+          <View style={[s.colorPopover, { bottom: 36, left: 0 }]}>
+            <Text style={s.colorPopoverTitle}>Card Color</Text>
             <View style={s.colorGrid}>
               {accentColors.map((c, i) => (
                 <TouchableOpacity
@@ -214,16 +209,9 @@ export default function CardPreview({
                 />
               ))}
             </View>
-            <TouchableOpacity
-              style={s.colorCancelBtn}
-              onPress={() => setColorPickerVisible(false)}
-              activeOpacity={0.7}
-            >
-              <Text style={s.colorCancelText}>Cancel</Text>
-            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </Modal>
+        </>
+      )}
     </View>
   );
 }
@@ -357,6 +345,42 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], cardWidth: 
       borderRadius: 7,
       borderWidth: 1,
       borderColor: colors.border,
+    },
+    // ── Color picker popover ──
+    colorPopover: {
+      position: 'absolute',
+      zIndex: 20,
+      backgroundColor: colors.surface,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: 12,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    },
+    colorPopoverTitle: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: colors.subtext,
+      marginBottom: 8,
+    },
+    colorGrid: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    colorSwatch: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    colorSwatchDefault: {
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    colorSwatchSelected: {
+      borderColor: colors.primary,
+      borderWidth: 3,
     },
     // ── Menu (absolute within cardWrapper) ──
     menuScrim: {
