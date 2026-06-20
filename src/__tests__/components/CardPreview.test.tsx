@@ -38,7 +38,7 @@ describe('CardPreview', () => {
     expect(screen.getByText('My Groceries')).toBeTruthy();
   });
 
-  it('should show "No tasks yet" when taskCount is 0', async () => {
+  it('should show "No tasks yet" when no unchecked tasks', async () => {
     const card = makeCard();
     const screen = await renderWithTheme(
       <CardPreview card={card} cardWidth={200} taskCount={0} onPress={jest.fn()} />,
@@ -122,7 +122,6 @@ describe('CardPreview', () => {
       <CardPreview card={card} cardWidth={200} onPress={jest.fn()} />,
     );
 
-    // Pin icon in title row + pin button in footer
     const pins = screen.getAllByText('📌');
     expect(pins.length).toBeGreaterThanOrEqual(1);
   });
@@ -133,7 +132,6 @@ describe('CardPreview', () => {
       <CardPreview card={card} cardWidth={200} onPress={jest.fn()} />,
     );
 
-    // Footer pin button shows 📍 for unpinned, so check title area has no 📌
     expect(screen.queryByText('📌')).toBeNull();
   });
 

@@ -88,6 +88,22 @@ export async function updateCard(
   }
 }
 
+/** Update card cosmetic fields (color, pinned) WITHOUT touching updatedAt.
+ *  This prevents cosmetic changes from reordering the card in the grid. */
+export async function updateCardCosmetic(
+  cardId: string,
+  data: Partial<Pick<Card, 'pinned' | 'color'>>,
+): Promise<void> {
+  console.log('[cards.updateCardCosmetic] request:', { cardId, data });
+  try {
+    await updateDoc(cardDoc(cardId), data);
+    console.log('[cards.updateCardCosmetic] success');
+  } catch (err) {
+    console.error('[cards.updateCardCosmetic] error:', err);
+    throw err;
+  }
+}
+
 /** Delete a card and all its tasks in a single batch. */
 export async function deleteCard(cardId: string): Promise<void> {
   console.log('[cards.deleteCard] request:', { cardId });

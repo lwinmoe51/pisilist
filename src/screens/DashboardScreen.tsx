@@ -1,11 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Alert,
-  FlatList,
   RefreshControl,
   Modal,
   TextInput,
@@ -15,17 +14,33 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { onSnapshot, query, orderBy, where } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useCards } from '../contexts/CardsContext';
 import { useInvitations } from '../contexts/InvitationsContext';
 import { useTheme } from '../theme/ThemeContext';
-import { createCard, updateCard, deleteCard as deleteCardService } from '../services/cards';
+import {
+  createCard,
+  updateCardCosmetic,
+  deleteCard as deleteCardService,
+  tasksQuery,
+  docToTask,
+} from '../services/cards';
+import { db } from '../config/firebase';
 import CardPreview from '../components/CardPreview';
 import ConfirmModal from '../components/ConfirmModal';
 import type { Card } from '../types';
 
 interface Props {
   navigation: any;
+}
+
+/** Task preview data per card. */
+interface CardTasks {
+  unchecked: string[];
+  taskCount: number;
+  completedCount: number;
+  reminderCount: number;
 }
 
 function getColumns(width: number) {
@@ -57,6 +72,9 @@ export default function DashboardScreen({ navigation }: Props) {
   const [confirmMessage, setConfirmMessage] = useState('');
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
+  // Task preview data per card
+  const [cardTasks, setCardTasks] = useState<Map<string, CardTasks>>(new Map());
+
   const isWeb = Platform.OS === 'web';
   const columns = getColumns(width);
   const contentMaxWidth = isWeb ? MAX_CONTENT_WIDTH : 0;
@@ -64,12 +82,55 @@ export default function DashboardScreen({ navigation }: Props) {
   const usableWidth = Math.min(width, contentMaxWidth || width) - hPad * 2;
   const cardWidth = (usableWidth - GRID_GAP * (columns - 1)) / columns;
 
+  // ── Subscribe to tasks for each card ──
+  useEffect(() => {
+    if (!cards.length) return;
+
+    const unsubscribes: (() => void)[] = [];
+
+    for (const card of cards) {
+      const q = query(
+        tasksQuery(card.id),
+      );
+      const unsub = onSnapshot(
+        q,
+        (snapshot) => {
+          const tasks = snapshot.docs.map((d) => docToTask(d.id, d.data()));
+          const unchecked = tasks
+            .filter((t) => !t.completed)
+            .map((t) => t.text);
+          const completedCount = tasks.filter((t) => t.completed).length;
+          const reminderCount = tasks.reduce(
+            (sum, t) => sum + (t.reminders?.length ?? 0),
+            0,
+          );
+          setCardTasks((prev) => {
+            const next = new Map(prev);
+            next.set(card.id, {
+              unchecked,
+              taskCount: tasks.length,
+              completedCount,
+              reminderCount,
+            });
+            return next;
+          });
+        },
+        () => {
+          // Silently handle permission errors for cards we can't read
+        },
+      );
+      unsubscribes.push(unsub);
+    }
+
+    return () => unsubscribes.forEach((u) => u());
+  }, [cards.map((c) => c.id).join(',')]);
+
   // Client-side search filter
-  const query = search.trim().toLowerCase();
+  const query_ = search.trim().toLowerCase();
   const filtered = useMemo(() => {
-    if (!query) return cards;
-    return cards.filter((c) => c.title.toLowerCase().includes(query));
-  }, [cards, query]);
+    if (!query_) return cards;
+    return cards.filter((c) => c.title.toLowerCase().includes(query_));
+  }, [cards, query_]);
 
   const pinned = useMemo(() => filtered.filter((c) => c.pinned), [filtered]);
   const others = useMemo(() => filtered.filter((c) => !c.pinned), [filtered]);
@@ -130,7 +191,7 @@ export default function DashboardScreen({ navigation }: Props) {
     if (!card) return;
     console.log('[UI] handleTogglePin:', { cardId, currentPinned: card.pinned });
     try {
-      await updateCard(cardId, { pinned: !card.pinned });
+      await updateCardCosmetic(cardId, { pinned: !card.pinned });
       console.log('[UI] handleTogglePin SUCCESS');
     } catch (err: any) {
       console.error('[UI] handleTogglePin FAILED:', err);
@@ -141,7 +202,7 @@ export default function DashboardScreen({ navigation }: Props) {
   const handleChangeColor = useCallback(async (cardId: string, color: string | null) => {
     console.log('[UI] handleChangeColor:', { cardId, color });
     try {
-      await updateCard(cardId, { color });
+      await updateCardCosmetic(cardId, { color });
       console.log('[UI] handleChangeColor SUCCESS');
     } catch (err: any) {
       console.error('[UI] handleChangeColor FAILED:', err);
@@ -169,37 +230,22 @@ export default function DashboardScreen({ navigation }: Props) {
     );
   }, [cards]);
 
-  // ── Render a grid section ──
-  const renderGrid = useCallback(
-    (items: Card[]) => (
-      <FlatList
-        data={items}
-        key={`grid-${columns}`}
-        numColumns={columns}
-        keyExtractor={(item) => item.id}
-        scrollEnabled={false}
-        style={s.grid}
-        contentContainerStyle={s.gridContent}
-        columnWrapperStyle={columns > 1 ? s.gridRow : undefined}
-        renderItem={({ item }) => (
-          <CardPreview
-            card={item}
-            taskCount={(item as any).taskCount ?? 0}
-            completedCount={(item as any).completedCount ?? 0}
-            uncheckedTasks={(item as any).uncheckedTasks ?? []}
-            reminderCount={(item as any).reminderCount ?? 0}
-            currentUserId={user?.uid}
-            cardWidth={cardWidth}
-            onPress={() => handleCardPress(item.id)}
-            onTogglePin={handleTogglePin}
-            onChangeColor={handleChangeColor}
-            onDeleteCard={handleDeleteCard}
-          />
-        )}
-      />
-    ),
-    [columns, cardWidth, user?.uid, handleCardPress, handleTogglePin, handleChangeColor, handleDeleteCard],
-  );
+  // ── Masonry: distribute cards into columns by height ──
+  const masonryColumns = useMemo(() => {
+    const cols: Card[][] = Array.from({ length: columns }, () => []);
+    const heights = new Array(columns).fill(0);
+
+    const allCards = [...pinned, ...others];
+    for (const card of allCards) {
+      const tasks = cardTasks.get(card.id);
+      const estHeight = estimateCardHeight(card, tasks);
+      const shortest = heights.indexOf(Math.min(...heights));
+      cols[shortest].push(card);
+      heights[shortest] += estHeight + GRID_GAP;
+    }
+
+    return cols;
+  }, [pinned, others, cardTasks, columns]);
 
   const s = themedStyles(colors);
 
@@ -252,12 +298,12 @@ export default function DashboardScreen({ navigation }: Props) {
           </View>
         ) : filtered.length === 0 ? (
           <View style={s.center}>
-            <Text style={s.placeholderIcon}>{query ? '🔍' : '📋'}</Text>
+            <Text style={s.placeholderIcon}>{query_ ? '🔍' : '📋'}</Text>
             <Text style={s.placeholderTitle}>
-              {query ? 'No Matches' : 'No Cards Yet'}
+              {query_ ? 'No Matches' : 'No Cards Yet'}
             </Text>
             <Text style={s.placeholderSubtitle}>
-              {query
+              {query_
                 ? 'No cards match your search.'
                 : 'Tap the + button to create your first task list.'}
             </Text>
@@ -269,15 +315,58 @@ export default function DashboardScreen({ navigation }: Props) {
             refreshControl={<RefreshControl refreshing={loading} />}
           >
             {pinned.length > 0 && (
-              <View style={s.section}>
-                <Text style={s.sectionLabel}>📌 Pinned</Text>
-                {renderGrid(pinned)}
+              <Text style={s.sectionLabel}>📌 Pinned</Text>
+            )}
+            {pinned.length > 0 && (
+              <View style={s.masonryRow}>
+                {masonryColumns.map((col, colIdx) => (
+                  <View key={`pin-${colIdx}`} style={s.masonryCol}>
+                    {col.filter((c) => c.pinned).map((card) => (
+                      <CardPreview
+                        key={card.id}
+                        card={card}
+                        taskCount={cardTasks.get(card.id)?.taskCount ?? 0}
+                        completedCount={cardTasks.get(card.id)?.completedCount ?? 0}
+                        uncheckedTasks={cardTasks.get(card.id)?.unchecked ?? []}
+                        reminderCount={cardTasks.get(card.id)?.reminderCount ?? 0}
+                        currentUserId={user?.uid}
+                        cardWidth={cardWidth}
+                        onPress={() => handleCardPress(card.id)}
+                        onTogglePin={handleTogglePin}
+                        onChangeColor={handleChangeColor}
+                        onDeleteCard={handleDeleteCard}
+                      />
+                    ))}
+                  </View>
+                ))}
               </View>
             )}
+
+            {others.length > 0 && pinned.length > 0 && (
+              <Text style={s.sectionLabel}>Others</Text>
+            )}
             {others.length > 0 && (
-              <View style={s.section}>
-                {pinned.length > 0 && <Text style={s.sectionLabel}>Others</Text>}
-                {renderGrid(others)}
+              <View style={s.masonryRow}>
+                {masonryColumns.map((col, colIdx) => (
+                  <View key={`other-${colIdx}`} style={s.masonryCol}>
+                    {col.filter((c) => !c.pinned).map((card) => (
+                      <CardPreview
+                        key={card.id}
+                        card={card}
+                        taskCount={cardTasks.get(card.id)?.taskCount ?? 0}
+                        completedCount={cardTasks.get(card.id)?.completedCount ?? 0}
+                        uncheckedTasks={cardTasks.get(card.id)?.unchecked ?? []}
+                        reminderCount={cardTasks.get(card.id)?.reminderCount ?? 0}
+                        currentUserId={user?.uid}
+                        cardWidth={cardWidth}
+                        onPress={() => handleCardPress(card.id)}
+                        onTogglePin={handleTogglePin}
+                        onChangeColor={handleChangeColor}
+                        onDeleteCard={handleDeleteCard}
+                      />
+                    ))}
+                  </View>
+                ))}
               </View>
             )}
           </ScrollView>
@@ -355,6 +444,22 @@ export default function DashboardScreen({ navigation }: Props) {
   );
 }
 
+/** Estimate card height for masonry layout. */
+function estimateCardHeight(card: Card, tasks?: CardTasks): number {
+  let h = 56; // title + padding
+  if (card.collaborators.length > 0) h += 18;
+  const count = tasks?.taskCount ?? 0;
+  if (count > 0) {
+    h += Math.min(count, 3) * 22; // task rows
+    if (count > 3) h += 16;
+  } else {
+    h += 18; // empty state
+  }
+  h += 20; // bottom row
+  h += 30; // footer strip
+  return h;
+}
+
 const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
   StyleSheet.create({
     container: {
@@ -417,9 +522,6 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       paddingTop: 12,
       paddingBottom: 100,
     },
-    section: {
-      marginBottom: 20,
-    },
     sectionLabel: {
       fontSize: 13,
       fontWeight: '600',
@@ -427,16 +529,17 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       textTransform: 'uppercase',
       letterSpacing: 0.5,
       marginBottom: 10,
+      marginTop: 8,
     },
-    grid: {
-      flex: 0,
-    },
-    gridContent: {
+    // ── Masonry ──
+    masonryRow: {
+      flexDirection: 'row',
       gap: GRID_GAP,
+      marginBottom: 16,
     },
-    gridRow: {
+    masonryCol: {
+      flex: 1,
       gap: GRID_GAP,
-      marginBottom: 0,
     },
     center: {
       flex: 1,
