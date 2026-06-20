@@ -20,6 +20,29 @@ export interface AppColors {
   chipBg: string;
 }
 
+/** Accent colors available for card backgrounds. */
+export const CARD_ACCENT_COLORS: (string | null)[] = [
+  null,          // default (surface)
+  '#e8f0fe',    // blue
+  '#fce8e6',    // red
+  '#fef7e0',    // yellow
+  '#e6f4ea',    // green
+  '#f3e8fd',    // purple
+  '#fce2db',    // pink
+  '#e0f2f1',    // teal
+];
+
+export const CARD_ACCENT_COLORS_DARK: (string | null)[] = [
+  null,          // default (surface)
+  '#1a2744',    // blue
+  '#3c1a1a',    // red
+  '#3d3520',    // yellow
+  '#1a3324',    // green
+  '#2a1a3d',    // purple
+  '#3d1a2a',    // pink
+  '#1a3330',    // teal
+];
+
 /** Light-mode color palette. */
 export const lightColors: AppColors = {
   background: '#f5f5f5',

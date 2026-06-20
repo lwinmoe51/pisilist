@@ -435,6 +435,7 @@ describe('docToCard', () => {
       ownerId: 'user-1',
       collaborators: ['user-2', 'user-3'],
       pinned: true,
+      color: '#e8f0fe',
       createdAt: ts,
       updatedAt: ts,
     });
@@ -445,6 +446,7 @@ describe('docToCard', () => {
       ownerId: 'user-1',
       collaborators: ['user-2', 'user-3'],
       pinned: true,
+      color: '#e8f0fe',
       createdAt: ts.toDate(),
       updatedAt: ts.toDate(),
     });
@@ -462,6 +464,7 @@ describe('docToCard', () => {
     expect(result.ownerId).toBe('');
     expect(result.collaborators).toEqual([]);
     expect(result.pinned).toBe(false);
+    expect(result.color).toBeNull();
     expect(result.createdAt).toBeInstanceOf(Date);
     expect(result.updatedAt).toBeInstanceOf(Date);
   });

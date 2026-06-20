@@ -56,6 +56,7 @@ export async function createCard(
       ownerId: uid,
       collaborators: [] as string[],
       pinned: false,
+      color: null,
       taskCount: 0,
       completedCount: 0,
       createdAt: serverTimestamp(),
@@ -69,10 +70,10 @@ export async function createCard(
   }
 }
 
-/** Update a card's top-level fields (title, pinned). */
+/** Update a card's top-level fields (title, pinned, color). */
 export async function updateCard(
   cardId: string,
-  data: Partial<Pick<Card, 'title' | 'pinned'>>,
+  data: Partial<Pick<Card, 'title' | 'pinned' | 'color'>>,
 ): Promise<void> {
   console.log('[cards.updateCard] request:', { cardId, data });
   try {
@@ -285,6 +286,7 @@ export function docToCard(id: string, data: Record<string, any>): Card {
     ownerId: data.ownerId ?? '',
     collaborators: data.collaborators ?? [],
     pinned: data.pinned ?? false,
+    color: data.color ?? null,
     createdAt: toDate(data.createdAt),
     updatedAt: toDate(data.updatedAt),
   };

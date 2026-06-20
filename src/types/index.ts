@@ -22,6 +22,7 @@ export interface Card {
   ownerId: string;
   collaborators: string[]; // user IDs
   pinned: boolean;
+  color: string | null; // accent color hex or null for default
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,5 +1,59 @@
 # Report — pisilist
 
+## [2026-06-20] Job: Dashboard Grid Overhaul + Card Inline Controls + Flat Design
+
+**Status:** ✅ Success
+**Summary:** Complete rewrite of DashboardScreen grid system and CardPreview component. Added responsive masonry-style grid with 16px gaps, section labels (not grid items), inline card controls (pin, color picker, delete menu), real task name preview, and flat modern card design with accent color support.
+
+### What Changed
+
+| Area | Before | After |
+|------|--------|-------|
+| Grid columns | 2 (mobile/web) | 1 mobile, 2 small tablet (600px+), 3 tablet (900px+), 4 desktop (1200px+) |
+| Grid gap | 8px | 16px |
+| Section headers | Mixed into FlatList as grid items (broke layout) | ScrollView with section labels above separate FlatLists |
+| Task preview | Hardcoded "Completed item 1" / "Task item 1" | Actual uncompleted task names passed from parent |
+| Card design | Shadow-only, no border | Flat with 1px border, accent color background support |
+| Card controls | None on dashboard | Footer strip: Pin/Unpin, Color picker, Ellipsis menu |
+| Delete card | Only from detail screen | From dashboard ellipsis menu + detail screen |
+| Color system | 18 tokens | 18 tokens + 8 accent colors (light + dark) |
+
+### Files Changed (7 files)
+
+| File | Type | Changes |
+|------|------|---------|
+| `src/types/index.ts` | Modified | Added `color: string \| null` to Card interface |
+| `src/theme/colors.ts` | Modified | Added `CARD_ACCENT_COLORS` and `CARD_ACCENT_COLORS_DARK` arrays (8 colors each) |
+| `src/services/cards.ts` | Modified | createCard adds `color: null`, updateCard accepts `color`, docToCard maps `color` |
+| `src/components/CardPreview.tsx` | Rewritten | Flat card design, footer strip with pin/color/menu, ellipsis dropdown with Delete, real task name preview |
+| `src/screens/DashboardScreen.tsx` | Rewritten | ScrollView with section labels, 16px gap, responsive columns, card action handlers (pin/color/delete) |
+| `src/__tests__/components/CardPreview.test.tsx` | Updated | New API with `uncheckedTasks` prop, pinned/progress assertions |
+| `src/__tests__/services/cards.test.ts` | Updated | docToCard tests include `color` field |
+| `src/__tests__/types/types.test.ts` | Updated | Card type test includes `color` field |
+
+### CardPreview New Features
+
+- **Footer control strip:** Pin/Unpin toggle, Color picker dots, Ellipsis menu button
+- **Ellipsis dropdown menu:** Pin/Unpin + Delete Card (destructive)
+- **Color picker:** 8 accent colors (default, blue, red, yellow, green, purple, pink, teal) in light + dark variants
+- **Real task preview:** Shows actual uncompleted task names with mini-checkboxes, not hardcoded placeholders
+- **Flat design:** 1px border, no shadow, accent color background, modern rounded corners
+
+### DashboardScreen New Features
+
+- **Responsive grid:** 1/2/3/4 columns based on screen width
+- **Section labels:** "📌 Pinned" and "Others" as full-width labels above their respective grids, not grid items
+- **16px gap:** Clean spacing between all cards
+- **Card actions:** Pin toggle, color change, delete — all handled from dashboard without navigating to detail
+
+### Test Results
+All 133 tests pass (9 suites). No regressions.
+
+### Errors
+None.
+
+---
+
 ## [2026-06-20] Session Report: Bug Fixes, WSL Networking, Delete Functionality, ConfirmModal
 
 **Status:** ✅ Success

@@ -8,11 +8,13 @@ describe('Type interfaces — structural checks', () => {
       ownerId: 'u1',
       collaborators: ['u2'],
       pinned: true,
+      color: '#e8f0fe',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     expect(card.id).toBe('c1');
     expect(card.pinned).toBe(true);
+    expect(card.color).toBe('#e8f0fe');
     expect(card.collaborators).toContain('u2');
   });
 

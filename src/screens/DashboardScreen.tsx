@@ -11,6 +11,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,28 +19,28 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCards } from '../contexts/CardsContext';
 import { useInvitations } from '../contexts/InvitationsContext';
 import { useTheme } from '../theme/ThemeContext';
-import { logOut } from '../services/auth';
-import { createCard } from '../services/cards';
+import { createCard, updateCard, deleteCard as deleteCardService } from '../services/cards';
 import CardPreview from '../components/CardPreview';
+import ConfirmModal from '../components/ConfirmModal';
 import type { Card } from '../types';
 
 interface Props {
   navigation: any;
 }
 
-function getColumns(width: number, isWeb: boolean) {
-  if (!isWeb) return 2;
+function getColumns(width: number) {
   if (width >= 1200) return 4;
-  if (width >= 768) return 3;
-  return 2;
+  if (width >= 900) return 3;
+  if (width >= 600) return 2;
+  return 1;
 }
 
+const GRID_GAP = 16;
 const MAX_CONTENT_WIDTH = 1200;
-const GRID_GAP = 8;
 
 export default function DashboardScreen({ navigation }: Props) {
   const { user } = useAuth();
-  const { cards, loading, error } = useCards();
+  const { cards, loading } = useCards();
   const { invitations } = useInvitations();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -50,10 +51,15 @@ export default function DashboardScreen({ navigation }: Props) {
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
 
-  const isWeb = Platform.OS === 'web';
-  const columns = getColumns(width, isWeb);
-  const contentMaxWidth = isWeb ? MAX_CONTENT_WIDTH : 0;
+  // Confirm modal state
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [confirmTitle, setConfirmTitle] = useState('');
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
+  const isWeb = Platform.OS === 'web';
+  const columns = getColumns(width);
+  const contentMaxWidth = isWeb ? MAX_CONTENT_WIDTH : 0;
   const hPad = 16;
   const usableWidth = Math.min(width, contentMaxWidth || width) - hPad * 2;
   const cardWidth = (usableWidth - GRID_GAP * (columns - 1)) / columns;
@@ -65,14 +71,33 @@ export default function DashboardScreen({ navigation }: Props) {
     return cards.filter((c) => c.title.toLowerCase().includes(query));
   }, [cards, query]);
 
-  const pinned = filtered.filter((c) => c.pinned);
-  const others = filtered.filter((c) => !c.pinned);
+  const pinned = useMemo(() => filtered.filter((c) => c.pinned), [filtered]);
+  const others = useMemo(() => filtered.filter((c) => !c.pinned), [filtered]);
 
-  // Avatar label from user displayName/email
   const avatarLabel = user
     ? (user.displayName || user.email || '?')[0].toUpperCase()
     : '?';
 
+  // ── Confirm helper ──
+  const showConfirm = (title: string, message: string, action: () => void) => {
+    setConfirmTitle(title);
+    setConfirmMessage(message);
+    setConfirmAction(() => action);
+    setConfirmVisible(true);
+  };
+
+  const handleConfirm = () => {
+    setConfirmVisible(false);
+    confirmAction?.();
+    setConfirmAction(null);
+  };
+
+  const handleConfirmCancel = () => {
+    setConfirmVisible(false);
+    setConfirmAction(null);
+  };
+
+  // ── Card actions ──
   const handleCreateCard = async () => {
     const title = newTitle.trim();
     if (!title) {
@@ -100,51 +125,87 @@ export default function DashboardScreen({ navigation }: Props) {
     [navigation],
   );
 
-  const renderCard = useCallback(
-    ({ item }: { item: any }) => {
-      const data = item as Card & { taskCount?: number; completedCount?: number };
-      return (
-        <CardPreview
-          card={data}
-          taskCount={(data as any).taskCount ?? 0}
-          completedCount={(data as any).completedCount ?? 0}
-          currentUserId={user?.uid}
-          cardWidth={cardWidth}
-          onPress={() => handleCardPress(data.id)}
-        />
-      );
-    },
-    [handleCardPress, cardWidth, user?.uid],
+  const handleTogglePin = useCallback(async (cardId: string) => {
+    const card = cards.find((c) => c.id === cardId);
+    if (!card) return;
+    console.log('[UI] handleTogglePin:', { cardId, currentPinned: card.pinned });
+    try {
+      await updateCard(cardId, { pinned: !card.pinned });
+      console.log('[UI] handleTogglePin SUCCESS');
+    } catch (err: any) {
+      console.error('[UI] handleTogglePin FAILED:', err);
+      Alert.alert('Error', err.message);
+    }
+  }, [cards]);
+
+  const handleChangeColor = useCallback(async (cardId: string, color: string | null) => {
+    console.log('[UI] handleChangeColor:', { cardId, color });
+    try {
+      await updateCard(cardId, { color });
+      console.log('[UI] handleChangeColor SUCCESS');
+    } catch (err: any) {
+      console.error('[UI] handleChangeColor FAILED:', err);
+      Alert.alert('Error', err.message);
+    }
+  }, []);
+
+  const handleDeleteCard = useCallback((cardId: string) => {
+    const card = cards.find((c) => c.id === cardId);
+    const title = card?.title || 'this card';
+    console.log('[UI] handleDeleteCard clicked, cardId:', cardId);
+    showConfirm(
+      'Delete Card',
+      `Delete "${title}" and all its tasks?`,
+      async () => {
+        try {
+          console.log('[UI] handleDeleteCard calling deleteCardService...');
+          await deleteCardService(cardId);
+          console.log('[UI] handleDeleteCard SUCCESS');
+        } catch (err: any) {
+          console.error('[UI] handleDeleteCard FAILED:', err);
+          Alert.alert('Error', err.message || String(err));
+        }
+      },
+    );
+  }, [cards]);
+
+  // ── Render a grid section ──
+  const renderGrid = useCallback(
+    (items: Card[]) => (
+      <FlatList
+        data={items}
+        key={`grid-${columns}`}
+        numColumns={columns}
+        keyExtractor={(item) => item.id}
+        scrollEnabled={false}
+        style={s.grid}
+        contentContainerStyle={s.gridContent}
+        columnWrapperStyle={columns > 1 ? s.gridRow : undefined}
+        renderItem={({ item }) => (
+          <CardPreview
+            card={item}
+            taskCount={(item as any).taskCount ?? 0}
+            completedCount={(item as any).completedCount ?? 0}
+            uncheckedTasks={(item as any).uncheckedTasks ?? []}
+            reminderCount={(item as any).reminderCount ?? 0}
+            currentUserId={user?.uid}
+            cardWidth={cardWidth}
+            onPress={() => handleCardPress(item.id)}
+            onTogglePin={handleTogglePin}
+            onChangeColor={handleChangeColor}
+            onDeleteCard={handleDeleteCard}
+          />
+        )}
+      />
+    ),
+    [columns, cardWidth, user?.uid, handleCardPress, handleTogglePin, handleChangeColor, handleDeleteCard],
   );
 
-  const renderSectionHeader = (title: string) => (
-    <Text style={themedStyles(colors, width).sectionTitle}>{title}</Text>
-  );
-
-  const allData: Array<{ type: 'pinned' } | { type: 'others' } | Card> = [];
-  if (pinned.length > 0) {
-    allData.push({ type: 'pinned' } as any);
-    allData.push(...pinned);
-  }
-  if (others.length > 0) {
-    allData.push({ type: 'others' } as any);
-    allData.push(...others);
-  }
-
-  const renderItem = useCallback(
-    ({ item }: { item: any }) => {
-      if (item.type === 'pinned') return renderSectionHeader('📌 Pinned');
-      if (item.type === 'others') return renderSectionHeader('Others');
-      return renderCard({ item });
-    },
-    [renderCard],
-  );
-
-  const s = themedStyles(colors, width);
+  const s = themedStyles(colors);
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
-      {/* Header: Search + Bell + Avatar — matches LAYOUT.md */}
+      {/* Header */}
       <View style={s.header}>
         <View style={s.searchWrap}>
           <Text style={s.searchIcon}>🔍</Text>
@@ -185,11 +246,11 @@ export default function DashboardScreen({ navigation }: Props) {
 
       {/* Card Grid */}
       <View style={[s.bodyWrap, contentMaxWidth > 0 && { alignSelf: 'center' as any, width: '100%', maxWidth: contentMaxWidth }]}>
-        {error ? (
+        {loading ? (
           <View style={s.center}>
-            <Text style={s.errorText}>Error: {error}</Text>
+            <Text style={s.loadingText}>Loading cards...</Text>
           </View>
-        ) : filtered.length === 0 && !loading ? (
+        ) : filtered.length === 0 ? (
           <View style={s.center}>
             <Text style={s.placeholderIcon}>{query ? '🔍' : '📋'}</Text>
             <Text style={s.placeholderTitle}>
@@ -202,30 +263,24 @@ export default function DashboardScreen({ navigation }: Props) {
             </Text>
           </View>
         ) : (
-          <FlatList
-            key={`grid-${columns}`}
-            data={allData}
-            renderItem={renderItem}
-            keyExtractor={(item: any) =>
-              item.type ? `section-${item.type}` : item.id
-            }
-            numColumns={columns}
-            columnWrapperStyle={
-              allData.some((d: any) => d.type === 'pinned' || d.type === 'others')
-                ? undefined
-                : { gap: GRID_GAP } as any
-            }
-            contentContainerStyle={[s.gridContent, { gap: GRID_GAP }]}
-            refreshControl={<RefreshControl refreshing={loading} />}
+          <ScrollView
+            contentContainerStyle={s.scrollContent}
             showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              loading ? (
-                <View style={s.center}>
-                  <Text style={s.loadingText}>Loading cards...</Text>
-                </View>
-              ) : null
-            }
-          />
+            refreshControl={<RefreshControl refreshing={loading} />}
+          >
+            {pinned.length > 0 && (
+              <View style={s.section}>
+                <Text style={s.sectionLabel}>📌 Pinned</Text>
+                {renderGrid(pinned)}
+              </View>
+            )}
+            {others.length > 0 && (
+              <View style={s.section}>
+                {pinned.length > 0 && <Text style={s.sectionLabel}>Others</Text>}
+                {renderGrid(others)}
+              </View>
+            )}
+          </ScrollView>
         )}
       </View>
 
@@ -287,11 +342,20 @@ export default function DashboardScreen({ navigation }: Props) {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        visible={confirmVisible}
+        title={confirmTitle}
+        message={confirmMessage}
+        onConfirm={handleConfirm}
+        onCancel={handleConfirmCancel}
+      />
     </View>
   );
 }
 
-const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: number) =>
+const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -306,7 +370,6 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: nu
       boxShadow: colors.headerShadow,
       gap: 10,
     },
-    // ── Search ──
     searchWrap: {
       flex: 1,
       flexDirection: 'row',
@@ -323,7 +386,6 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: nu
       color: colors.text,
       padding: 0,
     },
-    // ── Bell ──
     bellButton: { position: 'relative', padding: 4 },
     bellIcon: { fontSize: 20 },
     bellBadge: {
@@ -339,7 +401,6 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: nu
       paddingHorizontal: 4,
     },
     bellBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-    // ── Avatar ──
     avatar: {
       width: 36,
       height: 36,
@@ -349,24 +410,33 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: nu
       alignItems: 'center',
     },
     avatarLabel: { color: '#fff', fontSize: 16, fontWeight: '700' },
-    // ── Section ──
-    sectionTitle: {
-      width: '100%',
+    // ── Body ──
+    bodyWrap: { flex: 1 },
+    scrollContent: {
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 100,
+    },
+    section: {
+      marginBottom: 20,
+    },
+    sectionLabel: {
       fontSize: 13,
       fontWeight: '600',
       color: colors.subtext,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
-      paddingHorizontal: 12,
-      paddingTop: 10,
-      paddingBottom: 4,
+      marginBottom: 10,
     },
-    // ── Body ──
-    bodyWrap: { flex: 1 },
+    grid: {
+      flex: 0,
+    },
     gridContent: {
-      paddingHorizontal: 8,
-      paddingTop: 8,
-      paddingBottom: 100,
+      gap: GRID_GAP,
+    },
+    gridRow: {
+      gap: GRID_GAP,
+      marginBottom: 0,
     },
     center: {
       flex: 1,
@@ -387,7 +457,6 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], screenW: nu
       textAlign: 'center',
       lineHeight: 20,
     },
-    errorText: { color: colors.danger, fontSize: 14 },
     loadingText: { fontSize: 14, color: colors.placeholder },
     // ── FAB ──
     fab: {
