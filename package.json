@@ -31,6 +31,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "web:wsl": "EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0 REACT_NATIVE_PACKAGER_HOSTNAME=$(hostname -I | awk '{print $1}') expo start --web",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },

@@ -19,33 +19,43 @@
 - ✅ shadow* deprecation cleanup (all boxShadow now, zero warnings)
 - ✅ frontend-design plugin installed (project-scoped UI/UX skill)
 - ✅ Comprehensive API contract tests (133 tests, 9 suites, all passing)
-  - Auth: 25 -- every Firebase Auth call, param, error mapping
-  - Cards: 38 -- full CRUD, batch ops, queries, doc conversion
-  - Users: 12 -- upsert/create/find-by-email/get-by-uid/batch
-  - Invitations: 15 -- send/accept/decline/listener + Firestore doc mapping
-  - Notifications: 18 -- full lifecycle, permissions, content/trigger verification
-  - Types: 7 -- structural validation
-  - Config: 3 -- Firebase init exports
-  - Components: CardPreview 13 (100%)
-  - Contexts: AuthContext 3 (88%)
-- ✅ LAYOUT.md matching rewrite -- Dashboard search + avatar, CardDetail inline assignee + reminders, new SettingsScreen with dark mode toggle (commit 9185c46)
-- ✅ Bug fixes -- FlatList numColumns crash (key prop), card grid spacing
-- ✅ Keep-style UI rewrite -- All 7 tasks complete (T41-T47)
-  - T41: shadow + chip color tokens in colors.ts (18 tokens)
-  - T42: CardPreview shadow-only cards, checkbox preview items
-  - T43: DashboardScreen header shadow, flat FAB (no boxShadow/elevation)
-  - T44: CardDetailScreen 22px checkboxes with checkboxBorder, reminder chips with chipBg
-  - T45: Auth screens shadow inputs (borderWidth: 0 + cardShadow)
-  - T46: InvitationsScreen shadow header, pill buttons with chipBg
-  - T47: Removed unused cardBorder/cardSharedBorder tokens, verified zero deprecated shadow* usage
+- ✅ LAYOUT.md matching rewrite — Dashboard search + avatar, CardDetail inline assignee + reminders, SettingsScreen with dark mode toggle
+- ✅ Keep-style UI rewrite — All 7 tasks complete (T41-T47)
+- ✅ Cross-platform ConfirmModal component (replaces Alert.alert and window.confirm)
+- ✅ Full console logging on all UI handlers and Firebase service functions
+- ✅ WSL networking fix (web:wsl script for Expo on WSL2)
 
 ## In Progress
-- None (Keep-style UI rewrite complete)
+- None
 
 ## Pending
 - Write tests for AssigneePicker, ReminderModal, and screens
-- Test end-to-end on device
+- Test end-to-end on device (Android)
 - Deploy to app stores
+
+## Blockers
+- None
+
+## Installed Plugins (5)
+1. `firebase@claude-plugins-official` — Firestore, Auth, Cloud Functions, Security Rules
+2. `github@claude-plugins-official` — Repo management, commits, PRs, issues
+3. `context7@claude-plugins-official` — Library docs, wiki maintenance
+4. `expo@claude-plugins-official` — Expo SDK 56 docs, build/deploy guidance
+5. `frontend-design@claude-plugins-official` — UI/UX design patterns (MANDATORY for .tsx/StyleSheet work)
+
+## Project Skills (3)
+- `code_review/SKILL.md` — Pre-land code review using context7 for API validation
+- `documentation/SKILL.md` — Doc generation using context7 for API references
+- `frontend-design` (plugin) — Scoped as `pisilist:frontend-design`; must invoke before any UI change
+
+## Key Commands
+```bash
+npm run web          # Expo dev server (local)
+npm run web:wsl      # Expo dev server (WSL2 → Windows browser)
+npm test             # Run Jest (133 tests)
+npm run test:coverage # Jest + coverage report
+npx tsc --noEmit     # TypeScript type-check
+```
 
 ## Blockers
 - None

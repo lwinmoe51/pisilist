@@ -1,6 +1,6 @@
 # Code Flowchart -- pisilist
 
-> Updated: 2026-06-20 (Keep-style UI rewrite complete — T41-T47 all done)
+> Updated: 2026-06-20 (Session complete — Keep-style rewrite done, ConfirmModal added, full logging, WSL fix)
 
 ## Project -- pisilist-app (Firebase)
 
@@ -35,6 +35,7 @@ pisilist/
 │   ├── components/
 │   │   ├── CardPreview.tsx                  # Keep-style card: shadow-only (no border), checkbox preview items, shared indicator
 │   │   ├── AssigneePicker.tsx               # Bottom sheet: pick collaborator for per-task assignment
+│   │   ├── ConfirmModal.tsx                 # Cross-platform confirmation modal (replaces Alert.alert on web)
 │   │   ├── DateTimePicker.tsx               # Platform-aware DateTimePicker (native/HTML5)
 │   │   └── ReminderModal.tsx               # DateTimePicker: add/remove per-task reminders
 │   ├── screens/
@@ -124,6 +125,7 @@ Firebase Auth                          Firestore
     inline reminders with timestamps + [✕] remove
     inline DateTimePicker (+ Add Reminder)
     invite collaborator modal
+    confirm modal (delete card / delete task)
 ```
 
 ## Theme System (18 Color Tokens)
@@ -209,13 +211,17 @@ Other:
   contexts/AuthContext   -- 3 tests (88% coverage)
 
 Screens: 0% (require React Native Testing Library + Firebase mock setup)
+
+Console logging: Full request/response logging on all Firebase service functions
+and all UI event handlers (cards.ts, CardDetailScreen.tsx, DashboardScreen.tsx)
 ```
 
 ## Key Commands
 
 ```bash
 npm start               # Expo dev server
-npm run web             # Web target
+npm run web             # Web target (local)
+npm run web:wsl         # Web target (WSL2 → Windows browser)
 npm test                # Run Jest (133 tests)
 npm run test:coverage   # Jest + coverage report
 npx tsc --noEmit        # TypeScript type-check

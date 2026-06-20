@@ -36,6 +36,7 @@ import { getUsersByUids } from '../services/users';
 import { scheduleReminder, cancelReminder } from '../services/notifications';
 import { db } from '../config/firebase';
 import DateTimePicker from '../components/DateTimePicker';
+import ConfirmModal from '../components/ConfirmModal';
 import type { Card, Task, Reminder } from '../types';
 
 interface Props {
@@ -65,6 +66,12 @@ export default function CardDetailScreen({ navigation, route }: Props) {
   const [inviteVisible, setInviteVisible] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviting, setInviting] = useState(false);
+
+  // Confirm modal state
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [confirmTitle, setConfirmTitle] = useState('');
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   // Per-task inline state
   const [expandAssign, setExpandAssign] = useState<string | null>(null); // task id
@@ -121,80 +128,147 @@ export default function CardDetailScreen({ navigation, route }: Props) {
     getUsersByUids(uids).then(setCollabProfiles);
   }, [card?.ownerId, card?.collaborators?.join(',')]);
 
+  // ── Confirm modal helper ─────────────────────────────────────
+  const showConfirm = (title: string, message: string, action: () => void) => {
+    setConfirmTitle(title);
+    setConfirmMessage(message);
+    setConfirmAction(() => action);
+    setConfirmVisible(true);
+  };
+
+  const handleConfirm = () => {
+    setConfirmVisible(false);
+    confirmAction?.();
+    setConfirmAction(null);
+  };
+
+  const handleConfirmCancel = () => {
+    setConfirmVisible(false);
+    setConfirmAction(null);
+  };
+
   // ── Card actions ───────────────────────────────────────────────
   const handleTitleEdit = async () => {
     const t = titleDraft.trim();
+    console.log('[UI] handleTitleEdit:', { cardId, newTitle: t, oldTitle: card?.title });
     if (t && t !== card?.title) {
-      try { await updateCard(cardId, { title: t }); } catch (err: any) { Alert.alert('Error', err.message); }
+      try { await updateCard(cardId, { title: t }); } catch (err: any) {
+        console.error('[UI] handleTitleEdit FAILED:', err);
+        Alert.alert('Error', err.message || String(err));
+      }
     }
     setEditingTitle(false);
   };
 
   const handleDeleteCard = () => {
-    Alert.alert('Delete Card', 'This will permanently delete the card and all its tasks.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        try { await deleteCard(cardId); navigation.goBack(); } catch (err: any) { Alert.alert('Error', err.message); }
-      }},
-    ]);
+    console.log('[UI] handleDeleteCard clicked, cardId:', cardId);
+    showConfirm(
+      'Delete Card',
+      'This will permanently delete the card and all its tasks.',
+      async () => {
+        try {
+          console.log('[UI] handleDeleteCard calling deleteCard...');
+          await deleteCard(cardId);
+          console.log('[UI] handleDeleteCard SUCCESS, navigating back');
+          navigation.goBack();
+        } catch (err: any) {
+          console.error('[UI] handleDeleteCard FAILED:', err);
+          Alert.alert('Error', err.message || String(err));
+        }
+      },
+    );
   };
 
   const handleToggle = async (task: Task) => {
-    try { await toggleTask(cardId, task.id, !task.completed); } catch (err: any) { Alert.alert('Error', err.message); }
+    console.log('[UI] handleToggle:', { taskId: task.id, taskText: task.text, currentCompleted: task.completed, newCompleted: !task.completed });
+    try { await toggleTask(cardId, task.id, !task.completed); } catch (err: any) {
+      console.error('[UI] handleToggle FAILED:', err);
+      Alert.alert('Error', err.message || String(err));
+    }
   };
 
   const handleDeleteTask = (task: Task) => {
-    Alert.alert('Delete Task', `Delete "${task.text}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        try { await deleteTask(cardId, task.id, task.completed); } catch (err: any) { Alert.alert('Error', err.message); }
-      }},
-    ]);
+    console.log('[UI] handleDeleteTask clicked, taskId:', task.id, 'taskText:', task.text);
+    showConfirm(
+      'Delete Task',
+      `Delete "${task.text}"?`,
+      async () => {
+        try {
+          console.log('[UI] handleDeleteTask calling deleteTask...');
+          await deleteTask(cardId, task.id, task.completed);
+          console.log('[UI] handleDeleteTask SUCCESS');
+        } catch (err: any) {
+          console.error('[UI] handleDeleteTask FAILED:', err);
+          Alert.alert('Error', err.message || String(err));
+        }
+      },
+    );
   };
 
   const handleAddTask = async () => {
     const text = newTaskText.trim();
     if (!text) return;
+    console.log('[UI] handleAddTask:', { cardId, text });
     setAddingTask(true);
-    try { await createTask(cardId, text); setNewTaskText(''); } catch (err: any) { Alert.alert('Error', err.message); }
+    try { await createTask(cardId, text); console.log('[UI] handleAddTask SUCCESS'); setNewTaskText(''); } catch (err: any) {
+      console.error('[UI] handleAddTask FAILED:', err);
+      Alert.alert('Error', err.message || String(err));
+    }
     setAddingTask(false);
   };
 
   const handleInvite = async () => {
     const email = inviteEmail.trim();
     if (!email || !user?.email || !card) return;
+    console.log('[UI] handleInvite:', { email, fromUser: user.email, cardId });
     setInviting(true);
     try {
       await sendInvitation(user.uid, user.email, { toEmail: email, cardId, cardTitle: card.title });
+      console.log('[UI] handleInvite SUCCESS');
       setInviteVisible(false); setInviteEmail('');
       Alert.alert('Sent', `Invitation sent to ${email}.`);
-    } catch (err: any) { Alert.alert('Error', err.message); }
+    } catch (err: any) {
+      console.error('[UI] handleInvite FAILED:', err);
+      Alert.alert('Error', err.message || String(err));
+    }
     setInviting(false);
   };
 
   // ── Inline assign ──────────────────────────────────────────────
   const handleAssign = async (task: Task, uid: string | null) => {
     const email = uid ? collabProfiles.get(uid)?.email ?? null : null;
-    try { await updateTask(cardId, task.id, { assignee: email }); } catch (err: any) { Alert.alert('Error', err.message); }
+    console.log('[UI] handleAssign:', { taskId: task.id, uid, email });
+    try { await updateTask(cardId, task.id, { assignee: email }); } catch (err: any) {
+      console.error('[UI] handleAssign FAILED:', err);
+      Alert.alert('Error', err.message || String(err));
+    }
     setExpandAssign(null);
   };
 
   // ── Inline reminder add ────────────────────────────────────────
   const handleAddReminder = async (task: Task, ts: Date) => {
     if (!card) return;
+    console.log('[UI] handleAddReminder:', { taskId: task.id, timestamp: ts.toISOString() });
     const reminder: Reminder = { id: `rem_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, timestamp: ts };
     const notifId = await scheduleReminder(task.id, card.title, task.text, ts);
     const saved = { ...reminder, notificationId: notifId };
     const updated = [...task.reminders, saved];
-    try { await updateTaskReminders(cardId, task.id, updated); } catch (err: any) { Alert.alert('Error', err.message); }
+    try { await updateTaskReminders(cardId, task.id, updated); } catch (err: any) {
+      console.error('[UI] handleAddReminder FAILED:', err);
+      Alert.alert('Error', err.message || String(err));
+    }
     setExpandReminder(null);
   };
 
   const handleRemoveReminder = async (task: Task, reminderId: string) => {
+    console.log('[UI] handleRemoveReminder:', { taskId: task.id, reminderId });
     const target = task.reminders.find((r) => r.id === reminderId);
     if (target) await cancelReminder((target as any).notificationId ?? '');
     const updated = task.reminders.filter((r) => r.id !== reminderId);
-    try { await updateTaskReminders(cardId, task.id, updated); } catch (err: any) { Alert.alert('Error', err.message); }
+    try { await updateTaskReminders(cardId, task.id, updated); } catch (err: any) {
+      console.error('[UI] handleRemoveReminder FAILED:', err);
+      Alert.alert('Error', err.message || String(err));
+    }
   };
 
   // ── Helpers ────────────────────────────────────────────────────
@@ -410,6 +484,15 @@ export default function CardDetailScreen({ navigation, route }: Props) {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        visible={confirmVisible}
+        title={confirmTitle}
+        message={confirmMessage}
+        onConfirm={handleConfirm}
+        onCancel={handleConfirmCancel}
+      />
     </View>
   );
 }

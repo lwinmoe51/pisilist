@@ -49,17 +49,24 @@ export async function createCard(
   uid: string,
   title: string,
 ): Promise<string> {
-  const docRef = await addDoc(cardCollection(), {
-    title: title.trim() || 'Untitled',
-    ownerId: uid,
-    collaborators: [] as string[],
-    pinned: false,
-    taskCount: 0,
-    completedCount: 0,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  return docRef.id;
+  console.log('[cards.createCard] request:', { uid, title });
+  try {
+    const docRef = await addDoc(cardCollection(), {
+      title: title.trim() || 'Untitled',
+      ownerId: uid,
+      collaborators: [] as string[],
+      pinned: false,
+      taskCount: 0,
+      completedCount: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    console.log('[cards.createCard] success:', { id: docRef.id });
+    return docRef.id;
+  } catch (err) {
+    console.error('[cards.createCard] error:', err);
+    throw err;
+  }
 }
 
 /** Update a card's top-level fields (title, pinned). */
@@ -67,23 +74,39 @@ export async function updateCard(
   cardId: string,
   data: Partial<Pick<Card, 'title' | 'pinned'>>,
 ): Promise<void> {
-  await updateDoc(cardDoc(cardId), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+  console.log('[cards.updateCard] request:', { cardId, data });
+  try {
+    await updateDoc(cardDoc(cardId), {
+      ...data,
+      updatedAt: serverTimestamp(),
+    });
+    console.log('[cards.updateCard] success');
+  } catch (err) {
+    console.error('[cards.updateCard] error:', err);
+    throw err;
+  }
 }
 
 /** Delete a card and all its tasks in a single batch. */
 export async function deleteCard(cardId: string): Promise<void> {
-  const tasksSnap = await getDocs(tasksCollection(cardId));
-  const batch = writeBatch(db);
+  console.log('[cards.deleteCard] request:', { cardId });
+  try {
+    const tasksSnap = await getDocs(tasksCollection(cardId));
+    console.log('[cards.deleteCard] found', tasksSnap.docs.length, 'tasks to delete');
+    const batch = writeBatch(db);
 
-  for (const taskDocSnap of tasksSnap.docs) {
-    batch.delete(taskDocSnap.ref);
+    for (const taskDocSnap of tasksSnap.docs) {
+      console.log('[cards.deleteCard] batching task delete:', taskDocSnap.id);
+      batch.delete(taskDocSnap.ref);
+    }
+    batch.delete(cardDoc(cardId));
+
+    await batch.commit();
+    console.log('[cards.deleteCard] success — card +', tasksSnap.docs.length, 'tasks deleted');
+  } catch (err) {
+    console.error('[cards.deleteCard] error:', err);
+    throw err;
   }
-  batch.delete(cardDoc(cardId));
-
-  await batch.commit();
 }
 
 // ── Task CRUD (subcollection under card) ───────────────────────────
@@ -93,28 +116,35 @@ export async function createTask(
   cardId: string,
   text: string,
 ): Promise<string> {
-  // Get current max order
-  const q = query(tasksCollection(cardId), orderBy('order', 'desc'));
-  const snapshot = await getDocs(q);
-  const maxOrder =
-    snapshot.empty ? -1 : snapshot.docs[0].data().order ?? 0;
+  console.log('[cards.createTask] request:', { cardId, text });
+  try {
+    // Get current max order
+    const q = query(tasksCollection(cardId), orderBy('order', 'desc'));
+    const snapshot = await getDocs(q);
+    const maxOrder =
+      snapshot.empty ? -1 : snapshot.docs[0].data().order ?? 0;
 
-  const docRef = await addDoc(tasksCollection(cardId), {
-    text: text.trim(),
-    completed: false,
-    assignee: null,
-    reminders: [] as Reminder[],
-    order: maxOrder + 1,
-    createdAt: serverTimestamp(),
-  });
+    const docRef = await addDoc(tasksCollection(cardId), {
+      text: text.trim(),
+      completed: false,
+      assignee: null,
+      reminders: [] as Reminder[],
+      order: maxOrder + 1,
+      createdAt: serverTimestamp(),
+    });
 
-  // Bump taskCount on the card
-  await updateDoc(cardDoc(cardId), {
-    taskCount: increment(1),
-    updatedAt: serverTimestamp(),
-  });
+    // Bump taskCount on the card
+    await updateDoc(cardDoc(cardId), {
+      taskCount: increment(1),
+      updatedAt: serverTimestamp(),
+    });
 
-  return docRef.id;
+    console.log('[cards.createTask] success:', { id: docRef.id, order: maxOrder + 1 });
+    return docRef.id;
+  } catch (err) {
+    console.error('[cards.createTask] error:', err);
+    throw err;
+  }
 }
 
 /** Update a task's text or assignee. */
@@ -123,7 +153,14 @@ export async function updateTask(
   taskId: string,
   data: Partial<Pick<Task, 'text' | 'assignee'>>,
 ): Promise<void> {
-  await updateDoc(taskDoc(cardId, taskId), data);
+  console.log('[cards.updateTask] request:', { cardId, taskId, data });
+  try {
+    await updateDoc(taskDoc(cardId, taskId), data);
+    console.log('[cards.updateTask] success');
+  } catch (err) {
+    console.error('[cards.updateTask] error:', err);
+    throw err;
+  }
 }
 
 /** Toggle a task's completed status. Updates card's completedCount. */
@@ -132,13 +169,20 @@ export async function toggleTask(
   taskId: string,
   completed: boolean,
 ): Promise<void> {
-  const batch = writeBatch(db);
-  batch.update(taskDoc(cardId, taskId), { completed });
-  batch.update(cardDoc(cardId), {
-    completedCount: increment(completed ? 1 : -1),
-    updatedAt: serverTimestamp(),
-  });
-  await batch.commit();
+  console.log('[cards.toggleTask] request:', { cardId, taskId, completed });
+  try {
+    const batch = writeBatch(db);
+    batch.update(taskDoc(cardId, taskId), { completed });
+    batch.update(cardDoc(cardId), {
+      completedCount: increment(completed ? 1 : -1),
+      updatedAt: serverTimestamp(),
+    });
+    await batch.commit();
+    console.log('[cards.toggleTask] success');
+  } catch (err) {
+    console.error('[cards.toggleTask] error:', err);
+    throw err;
+  }
 }
 
 /** Delete a single task. Updates card's taskCount and optionally completedCount. */
@@ -147,17 +191,24 @@ export async function deleteTask(
   taskId: string,
   wasCompleted: boolean,
 ): Promise<void> {
-  const batch = writeBatch(db);
-  batch.delete(taskDoc(cardId, taskId));
-  const cardUpdate: Record<string, any> = {
-    taskCount: increment(-1),
-    updatedAt: serverTimestamp(),
-  };
-  if (wasCompleted) {
-    cardUpdate.completedCount = increment(-1);
+  console.log('[cards.deleteTask] request:', { cardId, taskId, wasCompleted });
+  try {
+    const batch = writeBatch(db);
+    batch.delete(taskDoc(cardId, taskId));
+    const cardUpdate: Record<string, any> = {
+      taskCount: increment(-1),
+      updatedAt: serverTimestamp(),
+    };
+    if (wasCompleted) {
+      cardUpdate.completedCount = increment(-1);
+    }
+    batch.update(cardDoc(cardId), cardUpdate);
+    await batch.commit();
+    console.log('[cards.deleteTask] success');
+  } catch (err) {
+    console.error('[cards.deleteTask] error:', err);
+    throw err;
   }
-  batch.update(cardDoc(cardId), cardUpdate);
-  await batch.commit();
 }
 
 /** Add a collaborator to a card's collaborators array (server-side). */
@@ -165,10 +216,17 @@ export async function addCollaborator(
   cardId: string,
   userId: string,
 ): Promise<void> {
-  await updateDoc(cardDoc(cardId), {
-    collaborators: arrayUnion(userId),
-    updatedAt: serverTimestamp(),
-  });
+  console.log('[cards.addCollaborator] request:', { cardId, userId });
+  try {
+    await updateDoc(cardDoc(cardId), {
+      collaborators: arrayUnion(userId),
+      updatedAt: serverTimestamp(),
+    });
+    console.log('[cards.addCollaborator] success');
+  } catch (err) {
+    console.error('[cards.addCollaborator] error:', err);
+    throw err;
+  }
 }
 
 /** Update reminders on a task document. */
@@ -177,7 +235,14 @@ export async function updateTaskReminders(
   taskId: string,
   reminders: Reminder[],
 ): Promise<void> {
-  await updateDoc(taskDoc(cardId, taskId), { reminders });
+  console.log('[cards.updateTaskReminders] request:', { cardId, taskId, count: reminders.length });
+  try {
+    await updateDoc(taskDoc(cardId, taskId), { reminders });
+    console.log('[cards.updateTaskReminders] success');
+  } catch (err) {
+    console.error('[cards.updateTaskReminders] error:', err);
+    throw err;
+  }
 }
 
 // ── Query helpers ──────────────────────────────────────────────────

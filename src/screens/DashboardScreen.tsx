@@ -81,10 +81,13 @@ export default function DashboardScreen({ navigation }: Props) {
       return;
     }
     if (!user) return;
+    console.log('[UI] handleCreateCard:', { uid: user.uid, title });
     setCreating(true);
     try {
       await createCard(user.uid, title);
+      console.log('[UI] handleCreateCard SUCCESS');
     } catch (err: any) {
+      console.error('[UI] handleCreateCard FAILED:', err);
       Alert.alert('Error', err.message || 'Failed to create card.');
     }
     setCreating(false);
