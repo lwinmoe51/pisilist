@@ -36,11 +36,15 @@ export default function InvitationsScreen({ navigation }: Props) {
 
   const handleAccept = async (inv: Invitation) => {
     if (!user) return;
+    console.log('[UI] handleAccept:', { inviteId: inv.id, cardId: inv.cardId, cardTitle: inv.cardTitle });
     setProcessingIds((prev) => new Set(prev).add(inv.id));
     try {
       await acceptInvitation(inv.id, user.uid, inv.cardId);
+      console.log('[UI] handleAccept SUCCESS');
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to accept invitation.');
+      console.error('[UI] handleAccept FAILED:', err);
+      const msg = err.message || 'Failed to accept invitation.';
+      Platform.OS === 'web' ? window.alert(`Error\n\n${msg}`) : Alert.alert('Error', msg);
     }
     setProcessingIds((prev) => {
       const next = new Set(prev);
@@ -50,11 +54,15 @@ export default function InvitationsScreen({ navigation }: Props) {
   };
 
   const handleDecline = async (inv: Invitation) => {
+    console.log('[UI] handleDecline:', { inviteId: inv.id });
     setProcessingIds((prev) => new Set(prev).add(inv.id));
     try {
       await declineInvitation(inv.id);
+      console.log('[UI] handleDecline SUCCESS');
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to decline invitation.');
+      console.error('[UI] handleDecline FAILED:', err);
+      const msg = err.message || 'Failed to decline invitation.';
+      Platform.OS === 'web' ? window.alert(`Error\n\n${msg}`) : Alert.alert('Error', msg);
     }
     setProcessingIds((prev) => {
       const next = new Set(prev);

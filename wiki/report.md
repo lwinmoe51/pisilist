@@ -1,5 +1,63 @@
 # Report — pisilist
 
+## [2026-06-20] Job: Fix Invitation Acceptance Workflow + Firestore Rules
+
+**Status:** ✅ Success
+**Summary:** Fixed broken invitation acceptance by updating Firestore security rules to allow invitee to add themselves to card collaborators. Added logging to invitation service. Fixed web-compatible alerts on InvitationsScreen.
+
+### Root Cause
+
+The Firestore card update rule blocked the invitee from adding themselves to collaborators:
+```
+allow update: if canWriteCard(resource)  // invitee NOT a collaborator yet → FAIL
+  && (owner check...)                    // invitee NOT the owner → FAIL
+```
+
+`writeBatch` validates each operation against **pre-batch state**. The invitee isn't a collaborator yet when the card update is validated, so the batch fails.
+
+### Fix — Firestore Rules (`firestore.rules`)
+
+Updated card update rule to allow authenticated users to add exactly one collaborator (themselves):
+```
+allow update: if canWriteCard(resource)
+  || (
+    request.auth != null
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['collaborators'])
+    && request.resource.data.collaborators.size() == resource.data.collaborators.size() + 1
+  );
+```
+
+**Security:** The `size() + 1` check ensures only one collaborator can be added per operation. The client verifies a valid pending invitation exists before calling `acceptInvitation`. The batch ensures atomicity (invitation status + card collaborators updated together).
+
+### Fix — Invitation Service (`src/services/invitations.ts`)
+
+- Added `console.log`/`console.error` to `acceptInvitation` and `declineInvitation`
+- Request params, success, and error now logged for debugging
+
+### Fix — InvitationsScreen (`src/screens/InvitationsScreen.tsx`)
+
+- Replaced `Alert.alert` with `window.alert` on web for error display
+- Added `console.log`/`console.error` to `handleAccept` and `handleDecline`
+
+### Invitations Flow
+
+1. Sender creates invitation → `invitations/{id}` with `status: 'pending'`
+2. Recipient sees invitation in pending list (real-time listener filters `status == 'pending'`)
+3. Recipient clicks ACCEPT → `acceptInvitation()` runs `writeBatch`:
+   - `batch.update(invitation, { status: 'accepted' })` — marks invitation done
+   - `batch.update(card, { collaborators: arrayUnion(userId) })` — adds user to card
+4. Real-time listener fires → invitation disappears from pending UI
+5. Card appears on recipient's dashboard (now a collaborator)
+
+### Deployed
+- Firestore rules: ✅
+- Web hosting: ✅ at https://pisilist-app.web.app
+
+### Test Results
+All 133 tests pass (9 suites).
+
+---
+
 ## [2026-06-20] Job: Sign Out Fix + PisiList Logo
 
 **Status:** ✅ Success

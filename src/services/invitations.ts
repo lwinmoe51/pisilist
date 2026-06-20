@@ -84,17 +84,33 @@ export async function acceptInvitation(
   userId: string,
   cardId: string,
 ): Promise<void> {
-  const batch = writeBatch(db);
-  batch.update(invitationDoc(inviteId), { status: 'accepted' });
-  batch.update(cardDoc(cardId), {
-    collaborators: arrayUnion(userId),
-  });
-  await batch.commit();
+  console.log('[invitations.accept] request:', { inviteId, userId, cardId });
+  try {
+    const batch = writeBatch(db);
+    // Step 1: Mark invitation as accepted
+    batch.update(invitationDoc(inviteId), { status: 'accepted' });
+    // Step 2: Add user to card's collaborators array
+    batch.update(cardDoc(cardId), {
+      collaborators: arrayUnion(userId),
+    });
+    await batch.commit();
+    console.log('[invitations.accept] success');
+  } catch (err: any) {
+    console.error('[invitations.accept] error:', err);
+    throw err;
+  }
 }
 
 /** Decline an invitation. */
 export async function declineInvitation(inviteId: string): Promise<void> {
-  await updateDoc(invitationDoc(inviteId), { status: 'declined' });
+  console.log('[invitations.decline] request:', { inviteId });
+  try {
+    await updateDoc(invitationDoc(inviteId), { status: 'declined' });
+    console.log('[invitations.decline] success');
+  } catch (err: any) {
+    console.error('[invitations.decline] error:', err);
+    throw err;
+  }
 }
 
 // ── Queries ────────────────────────────────────────────────────────

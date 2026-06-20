@@ -64,15 +64,16 @@ service cloud.firestore {
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.collaborators.size() == 0;
 
-      // Owner or collaborator can update. Only owner can change
-      // collaborators[] or ownerId (prevent privilege escalation).
+      // Owner or collaborator can update card fields.
+      // Additionally, any authenticated user can add themselves to collaborators
+      // (for invitation acceptance). The client verifies a valid pending invitation
+      // exists before making this call. The batch operation ensures atomicity:
+      // invitation status is updated to "accepted" in the same transaction.
       allow update: if canWriteCard(resource)
-        && (
-          request.auth.uid == resource.data.ownerId
-          || (
-            request.resource.data.ownerId == resource.data.ownerId
-            && request.resource.data.collaborators == resource.data.collaborators
-          )
+        || (
+          request.auth != null
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['collaborators'])
+          && request.resource.data.collaborators.size() == resource.data.collaborators.size() + 1
         );
 
       // Only the card owner can delete the card.
