@@ -22,6 +22,8 @@ My girlfrined
 
 She want her coworker to send multiple reminders for their tasks, but she don't want to use features rich task management apps like Trello, Asana, or Jira. She just want a **simple app** that can send **multiple reminders** that can't do in Trello, Asana, or Jira. So I built a simple app that can send multiple reminders to her coworkers for their tasks.
 
+---
+
 <!-- slide 3 -->
 
 # What I built
