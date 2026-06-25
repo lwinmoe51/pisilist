@@ -111,6 +111,10 @@
 - ✅ ResetPasswordScreen — email format validation, inline errors
 - ✅ Removed all Alert.alert calls from auth screens (replaced with inline errors)
 
+### Phase 3 Loading States
+- ✅ Created `src/components/SkeletonCard.tsx` — animated pulse placeholder
+- ✅ DashboardScreen — skeleton grid replaces "Loading cards..." text (6 cards, responsive layout)
+
 ### Plan
 - ✅ Created wiki/next_steps_plan.md — 6-phase plan for remaining work
 

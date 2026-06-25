@@ -1,5 +1,43 @@
 # Report — pisilist
 
+## [2026-06-25] Job: Phase 3 — Loading States
+
+**Status:** ✅ Success
+**Summary:** Created SkeletonCard component with pulse animation. Replaced "Loading cards..." text on Dashboard with a responsive skeleton grid. TypeScript compiles clean, all 133 tests pass.
+
+---
+
+### New File: `src/components/SkeletonCard.tsx`
+
+Pulsing placeholder card shown while Firestore data loads:
+- Animated opacity loop (0.3 → 0.7 → 0.3, 800ms per phase)
+- Configurable `height` prop (default 120)
+- Matches card grid dimensions (borderRadius 10, 1px border, theme colors)
+- Three placeholder lines: title (60% width), body (90%), short (45%)
+
+### DashboardScreen Changes
+
+**Before:** `{loading ? <Text>Loading cards...</Text> : ...}`
+**After:** `{loading ? <SkeletonGrid /> : ...}`
+
+- Shows 6 skeleton cards in responsive grid (1-4 columns matching screen width)
+- Varying heights (100/130/160px cycling) for visual variety
+- Uses same `cardWidth` and `GRID_GAP` as real card grid
+- Replaced `loadingText` style with `skeletonGrid` style
+
+### Files Changed
+
+| File | Changes |
+|------|---------|
+| `src/components/SkeletonCard.tsx` | **NEW** — Animated pulse placeholder card |
+| `src/screens/DashboardScreen.tsx` | Import SkeletonCard, replace loading text with skeleton grid, add skeletonGrid style |
+
+### Test Results
+
+All 133 tests pass (9 suites). TypeScript compiles clean.
+
+---
+
 ## [2026-06-25] Job: Phase 2 — Input Validation & Error Handling
 
 **Status:** ✅ Success
