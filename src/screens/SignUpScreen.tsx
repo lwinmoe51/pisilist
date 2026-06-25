@@ -23,6 +23,7 @@ const FORM_MAX_WIDTH = 400;
 export default function SignUpScreen({ navigation }: Props) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -49,8 +50,8 @@ export default function SignUpScreen({ navigation }: Props) {
     if (eErr || pErr || cErr) return;
 
     setLoading(true);
-    const displayName = email.trim().split('@')[0];
-    const { error } = await signUp(email.trim(), displayName, password);
+    const name = displayName.trim() || email.trim().split('@')[0];
+    const { error } = await signUp(email.trim(), name, password);
     setLoading(false);
 
     if (error) {
@@ -67,6 +68,15 @@ export default function SignUpScreen({ navigation }: Props) {
     >
       <View style={[s.inner, { width: formWidth, alignSelf: 'center' }]}>
         <Text style={s.title}>Create Account</Text>
+
+        <TextInput
+          style={s.input}
+          placeholder="Display Name (optional)"
+          placeholderTextColor={colors.placeholder}
+          value={displayName}
+          onChangeText={setDisplayName}
+          autoCapitalize="words"
+        />
 
         <TextInput
           style={[s.input, emailError && s.inputError]}

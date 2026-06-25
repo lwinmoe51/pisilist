@@ -1,5 +1,77 @@
 # Report — pisilist
 
+## [2026-06-25] Fix: Change Password Modal Spacing
+
+**Status:** ✅ Success
+**Summary:** Fixed cramped password inputs in the Change Password modal. Wrapped each input in a `modalField` container with 16px bottom margin and added uppercase field labels matching the Settings page style.
+
+### Changes
+
+| Area | Before | After |
+|------|--------|-------|
+| Modal inputs | Stacked with only 4px gap (from shared `input` style) | Each wrapped in `modalField` View with 16px margin-bottom |
+| Field labels | None (placeholder text only) | Added uppercase labels: "Current Password", "New Password", "Confirm New Password" |
+| Placeholders | "Current Password", "New Password", etc. | Changed to "Enter current password", "Enter new password", etc. (labels now hold the field names) |
+
+### Files Changed
+
+| File | Changes |
+|------|---------|
+| `src/screens/SettingsScreen.tsx` | Wrapped 3 modal inputs in `modalField` Views, added `modalFieldLabel` style, updated placeholders |
+
+### Test Results
+
+All 133 tests pass (9 suites). TypeScript compiles clean.
+
+---
+
+## [2026-06-25] Job: Phase 4 — SettingsScreen + Auth Service Updates
+
+**Status:** ✅ Success
+**Summary:** Made SettingsScreen profile fields editable (Name, Email) with SAVE button. Added CHANGE PASSWORD modal with re-authentication. Added Display Name field to SignUpScreen. Extended auth service with 3 new functions.
+
+---
+
+### Auth Service — New Functions (`src/services/auth.ts`)
+
+| Function | Purpose |
+|----------|---------|
+| `updateDisplayName(name)` | Calls Firebase `updateProfile` to set display name |
+| `updateUserEmail(email)` | Calls Firebase `updateEmail` to change email |
+| `changePassword(current, new)` | Re-authenticates with `EmailAuthProvider.credential`, then calls `updatePassword` |
+
+### SettingsScreen Rewrite (`src/screens/SettingsScreen.tsx`)
+
+| Feature | Detail |
+|---------|--------|
+| Name field | Editable TextInput, validates non-empty on save |
+| Email field | Editable TextInput, validates format on save |
+| SAVE button | Header right side, calls `updateDisplayName` + `updateUserEmail` if changed |
+| CHANGE PASSWORD | Outline button, opens modal with current/new/confirm fields |
+| Password modal | Re-authenticates before updating. Shows inline errors. |
+| Dark mode toggle | Unchanged |
+| Sign out | Unchanged |
+
+### SignUpScreen Update (`src/screens/SignUpScreen.tsx`)
+
+- Added "Display Name (optional)" TextInput before email
+- If provided, passed to `signUp()` as display name
+- If empty, falls back to email prefix (existing behavior)
+
+### Files Changed
+
+| File | Changes |
+|------|---------|
+| `src/services/auth.ts` | Added `updateDisplayName`, `updateUserEmail`, `changePassword` |
+| `src/screens/SettingsScreen.tsx` | Full rewrite: editable profile, password change modal |
+| `src/screens/SignUpScreen.tsx` | Added Display Name field |
+
+### Test Results
+
+All 133 tests pass (9 suites). TypeScript compiles clean.
+
+---
+
 ## [2026-06-25] Job: Phase 3 — Loading States
 
 **Status:** ✅ Success
