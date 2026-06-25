@@ -4,6 +4,10 @@ import {
   signOut,
   sendPasswordResetEmail,
   updateProfile,
+  updateEmail,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
   User,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
@@ -92,6 +96,51 @@ export async function resetPassword(email: string): Promise<{
     return { success: true, error: null };
   } catch (err: any) {
     return { success: false, error: mapAuthError(err) };
+  }
+}
+
+/**
+ * Update the current user's display name.
+ */
+export async function updateDisplayName(name: string): Promise<{ error: AuthError | null }> {
+  try {
+    if (!auth.currentUser) throw new Error('No authenticated user');
+    await updateProfile(auth.currentUser, { displayName: name });
+    return { error: null };
+  } catch (err: any) {
+    return { error: mapAuthError(err) };
+  }
+}
+
+/**
+ * Update the current user's email.
+ */
+export async function updateUserEmail(email: string): Promise<{ error: AuthError | null }> {
+  try {
+    if (!auth.currentUser) throw new Error('No authenticated user');
+    await updateEmail(auth.currentUser, email);
+    return { error: null };
+  } catch (err: any) {
+    return { error: mapAuthError(err) };
+  }
+}
+
+/**
+ * Change the current user's password. Re-authenticates first.
+ */
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ error: AuthError | null }> {
+  try {
+    const user = auth.currentUser;
+    if (!user || !user.email) throw new Error('No authenticated user');
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+    await updatePassword(user, newPassword);
+    return { error: null };
+  } catch (err: any) {
+    return { error: mapAuthError(err) };
   }
 }
 

@@ -115,6 +115,12 @@
 - ✅ Created `src/components/SkeletonCard.tsx` — animated pulse placeholder
 - ✅ DashboardScreen — skeleton grid replaces "Loading cards..." text (6 cards, responsive layout)
 
+### Phase 4 SettingsScreen + Auth
+- ✅ Added `updateDisplayName`, `updateUserEmail`, `changePassword` to auth service
+- ✅ SettingsScreen — editable Name + Email with SAVE button, CHANGE PASSWORD modal with re-auth
+- ✅ SignUpScreen — optional Display Name field (falls back to email prefix if empty)
+- ✅ Fixed Change Password modal spacing — each input wrapped in field container with 16px margin + labels
+
 ### Plan
 - ✅ Created wiki/next_steps_plan.md — 6-phase plan for remaining work
 
