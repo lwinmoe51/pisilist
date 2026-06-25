@@ -29,6 +29,7 @@ import {
 import { db } from '../config/firebase';
 import CardPreview from '../components/CardPreview';
 import ConfirmModal from '../components/ConfirmModal';
+import SkeletonCard from '../components/SkeletonCard';
 import type { Card } from '../types';
 
 interface Props {
@@ -294,8 +295,12 @@ export default function DashboardScreen({ navigation }: Props) {
       {/* Card Grid */}
       <View style={[s.bodyWrap, contentMaxWidth > 0 && { alignSelf: 'center' as any, width: '100%', maxWidth: contentMaxWidth }]}>
         {loading ? (
-          <View style={s.center}>
-            <Text style={s.loadingText}>Loading cards...</Text>
+          <View style={s.skeletonGrid}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <View key={i} style={{ width: cardWidth }}>
+                <SkeletonCard height={100 + (i % 3) * 30} />
+              </View>
+            ))}
           </View>
         ) : filtered.length === 0 ? (
           <View style={s.center}>
@@ -552,6 +557,13 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       lineHeight: 20,
     },
     loadingText: { fontSize: 14, color: colors.placeholder },
+    skeletonGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: GRID_GAP,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+    },
     // ── FAB ──
     fab: {
       position: 'absolute',
