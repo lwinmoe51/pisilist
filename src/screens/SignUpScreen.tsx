@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { signUp } from '../services/auth';
+import { validateEmail, validatePassword, validateConfirmPassword, getPasswordChecks } from '../utils/validation';
 
 interface Props {
   navigation: any;
@@ -27,27 +27,26 @@ export default function SignUpScreen({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const isWeb = Platform.OS === 'web';
   const formWidth = isWeb ? Math.min(width - 64, FORM_MAX_WIDTH) : width - 64;
 
-  const handleSignUp = async () => {
-    const alert = (title: string, msg: string) => {
-      Platform.OS === 'web' ? window.alert(`${title}\n\n${msg}`) : Alert.alert(title, msg);
-    };
+  const checks = getPasswordChecks(password);
+  const showChecks = password.length > 0;
 
-    if (!email.trim() || !password || !confirmPassword) {
-      alert('Missing fields', 'Please fill in all fields.');
-      return;
-    }
-    if (password.length < 6) {
-      alert('Weak password', 'Password must be at least 6 characters.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      alert('Mismatch', 'Passwords do not match.');
-      return;
-    }
+  const handleSignUp = async () => {
+    setServerError(null);
+    const eErr = validateEmail(email);
+    const pErr = validatePassword(password);
+    const cErr = validateConfirmPassword(password, confirmPassword);
+    setEmailError(eErr);
+    setPasswordError(pErr);
+    setConfirmError(cErr);
+    if (eErr || pErr || cErr) return;
 
     setLoading(true);
     const displayName = email.trim().split('@')[0];
@@ -55,7 +54,7 @@ export default function SignUpScreen({ navigation }: Props) {
     setLoading(false);
 
     if (error) {
-      alert('Sign up failed', error.message);
+      setServerError(error.message);
     }
   };
 
@@ -70,33 +69,51 @@ export default function SignUpScreen({ navigation }: Props) {
         <Text style={s.title}>Create Account</Text>
 
         <TextInput
-          style={s.input}
+          style={[s.input, emailError && s.inputError]}
           placeholder="Email Address"
           placeholderTextColor={colors.placeholder}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(t) => { setEmail(t); if (emailError) setEmailError(null); }}
+          onBlur={() => setEmailError(validateEmail(email))}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
         />
+        {emailError && <Text style={s.errorText}>{emailError}</Text>}
 
         <TextInput
-          style={s.input}
+          style={[s.input, passwordError && s.inputError]}
           placeholder="Password"
           placeholderTextColor={colors.placeholder}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(t) => { setPassword(t); if (passwordError) setPasswordError(null); }}
+          onBlur={() => setPasswordError(validatePassword(password))}
           secureTextEntry
         />
+        {showChecks && (
+          <View style={s.checkRow}>
+            <Text style={[s.checkItem, checks.minLength && s.checkPass]}>
+              {checks.minLength ? '✓' : '✗'} 8+ characters
+            </Text>
+            <Text style={[s.checkItem, checks.hasNumber && s.checkPass]}>
+              {checks.hasNumber ? '✓' : '✗'} 1 number
+            </Text>
+          </View>
+        )}
+        {passwordError && <Text style={s.errorText}>{passwordError}</Text>}
 
         <TextInput
-          style={s.input}
+          style={[s.input, confirmError && s.inputError]}
           placeholder="Confirm Password"
           placeholderTextColor={colors.placeholder}
           value={confirmPassword}
-          onChangeText={setConfirmPassword}
+          onChangeText={(t) => { setConfirmPassword(t); if (confirmError) setConfirmError(null); }}
+          onBlur={() => setConfirmError(validateConfirmPassword(password, confirmPassword))}
           secureTextEntry
         />
+        {confirmError && <Text style={s.errorText}>{confirmError}</Text>}
+
+        {serverError && <Text style={s.serverError}>{serverError}</Text>}
 
         <TouchableOpacity
           style={[s.button, loading && s.buttonDisabled]}
@@ -136,10 +153,40 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       paddingHorizontal: 14,
       paddingVertical: 12,
       fontSize: 16,
-      marginBottom: 14,
+      marginBottom: 4,
       color: colors.text,
       backgroundColor: colors.inputBg,
       boxShadow: colors.cardShadow,
+    },
+    inputError: {
+      borderWidth: 1,
+      borderColor: colors.danger,
+    },
+    errorText: {
+      color: colors.danger,
+      fontSize: 12,
+      marginBottom: 10,
+      marginLeft: 4,
+    },
+    serverError: {
+      color: colors.danger,
+      fontSize: 13,
+      textAlign: 'center',
+      marginBottom: 12,
+      marginTop: 4,
+    },
+    checkRow: {
+      flexDirection: 'row',
+      gap: 16,
+      marginBottom: 10,
+      marginLeft: 4,
+    },
+    checkItem: {
+      fontSize: 12,
+      color: colors.subtext,
+    },
+    checkPass: {
+      color: '#4caf50',
     },
     button: {
       backgroundColor: colors.primary,

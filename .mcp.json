@@ -16,28 +16,38 @@
       "description": "Context7 MCP server for up-to-date library/API documentation lookups (React Native, Expo, Firebase SDK)"
     }
   },
+  "plugins": {
+    "expo": {
+      "plugin": "expo@claude-plugins-official",
+      "description": "Expo SDK 56 docs, build/deploy guidance, EAS configuration"
+    },
+    "frontend-design": {
+      "plugin": "frontend-design@claude-plugins-official",
+      "description": "UI/UX design system patterns, responsive layout, accessibility, dark mode. Mandatory for all .tsx work."
+    }
+  },
   "agents": {
     "wiki_manager": {
-      "mcpServers": ["context7"],
-      "description": "Keeps wiki/ docs updated. Uses context7 for current library API references during documentation."
+      "mcpServers": ["context7", "firebase"],
+      "description": "Keeps wiki/ docs updated. Uses context7 for library API references and firebase for reading Firestore data structures, security rules, and project config to keep documentation accurate."
     },
     "git_manager": {
       "mcpServers": ["github"],
       "description": "Manages git commits, branches, PRs via GitHub plugin."
     },
     "test_manager": {
-      "mcpServers": [],
-      "description": "Manages Jest testing and coverage reporting."
+      "mcpServers": ["firebase"],
+      "description": "Manages Jest testing and coverage reporting. Uses firebase for Firestore security rule validation and emulator testing."
     }
   },
   "skills": {
     "code_review": {
-      "mcpServers": ["context7"],
-      "description": "Reviews code using context7 to verify API correctness and best practices."
+      "mcpServers": ["context7", "firebase"],
+      "description": "Reviews code using context7 to verify API correctness and firebase to validate Firestore security rules, data model consistency, and backend integration patterns."
     },
     "documentation": {
-      "mcpServers": ["context7"],
-      "description": "Generates documentation with context7-verified API references."
+      "mcpServers": ["context7", "firebase"],
+      "description": "Generates documentation with context7-verified API references and firebase-verified Firestore data structures and security rules."
     }
   }
 }

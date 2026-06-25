@@ -1,5 +1,125 @@
 # Report — pisilist
 
+## [2026-06-25] Job: Phase 2 — Input Validation & Error Handling
+
+**Status:** ✅ Success
+**Summary:** Added email format validation, password strength checks with live indicators, inline error display on all 3 auth screens, and a shared validation utility. Also fixed a pre-existing TypeScript error.
+
+---
+
+### New File: `src/utils/validation.ts`
+
+Shared validation utilities used by all auth screens:
+
+| Function | Purpose |
+|----------|---------|
+| `isValidEmail(email)` | Regex check for `x@y.z` format |
+| `validateEmail(email)` | Returns error string or null |
+| `validatePassword(password)` | Min 8 chars + 1 number |
+| `validateConfirmPassword(pw, confirm)` | Match check |
+| `validateRequired(value, label)` | Non-empty check |
+| `getPasswordChecks(password)` | Returns `{minLength, hasNumber}` for live UI |
+| `mapFirestoreError(err)` | Maps Firestore error codes to friendly messages |
+
+### Auth Screen Changes
+
+| Screen | Validation Added |
+|--------|-----------------|
+| `LoginScreen.tsx` | Email format + required password. Inline red error below inputs. Server error displayed inline. |
+| `SignUpScreen.tsx` | Email format + password strength (8 chars + 1 number) + confirm match. Live ✓/✗ indicators as user types. |
+| `ResetPasswordScreen.tsx` | Email format validation. Inline error + server error. |
+
+### UI Pattern (all 3 screens)
+
+- Error state per field: `emailError`, `passwordError`, `confirmError`
+- Validate on blur (`onBlur`) and on submit (`handleLogin`/`handleSignUp`/`handleReset`)
+- Clear error on change (`onChangeText` clears error for that field)
+- Red border on error: `inputError` style with `borderColor: colors.danger`
+- Error text below input: 12px, red, 10px bottom margin
+- Server errors displayed as centered red text above submit button
+- Removed all `Alert.alert` calls for validation (replaced with inline errors)
+
+### Bonus Fix
+
+- `CardPreview.tsx` line 385: `StyleSheet.absoluteFillObject` → `StyleSheet.absoluteFill` (pre-existing TS error)
+
+### Files Changed
+
+| File | Changes |
+|------|---------|
+| `src/utils/validation.ts` | **NEW** — Shared validation + error mapping |
+| `src/screens/LoginScreen.tsx` | Email/password inline validation, removed Alert |
+| `src/screens/SignUpScreen.tsx` | Email/password/confirm inline validation, live strength indicators, removed Alert |
+| `src/screens/ResetPasswordScreen.tsx` | Email inline validation, removed Alert |
+| `src/components/CardPreview.tsx` | Fixed `absoluteFillObject` → `absoluteFill` TS error |
+
+### Test Results
+
+All 133 tests pass (9 suites). TypeScript compiles clean (`npx tsc --noEmit`).
+
+---
+
+## [2026-06-25] Job: Phase 1 — Fix Broken Code + MCP Config Overhaul
+
+**Status:** ✅ Success
+**Summary:** Fixed 1 failing test, removed duplicate style keys, deleted dead code, overhauled MCP agent/skill wiring, added orchestration pipeline to CLAUDE.md.
+
+---
+
+### Fix #1: Failing notifications test
+
+**File:** `src/__tests__/services/notifications.test.ts` line 149-156
+**Problem:** `scheduleReminder > should use DATE trigger with correct timestamp` used a hardcoded past date `2026-06-20T15:30:00Z`. The service's `if (timestamp <= now) return ''` guard returned early, so `scheduleNotificationAsync` was never called.
+**Fix:** Changed to `new Date(Date.now() + 7200000)` (relative future date), matching the pattern used by all other tests in the suite.
+
+---
+
+### Fix #2: Duplicate style keys in CardPreview
+
+**File:** `src/components/CardPreview.tsx`
+**Problem:** `colorGrid`, `colorSwatch`, `colorSwatchDefault`, `colorSwatchSelected` were defined twice in `themedStyles`. The second group (36px modal overlay swatches) silently overwrote the first group (28px inline popover swatches). The inline popover is the one actually used in JSX.
+**Fix:** Removed the entire "Color picker overlay" section (lines 422-464) — `colorOverlay`, `colorSheet`, `colorTitle`, and the 4 duplicate keys. None were used in JSX.
+**Bonus:** Removed unused `cardLayout` state and its `onLayout` handler (captured layout but never read).
+
+---
+
+### Fix #3: Dead code — ReminderModal
+
+**File:** `src/components/ReminderModal.tsx` (276 lines)
+**Problem:** Never imported by any screen. CardDetailScreen uses inline reminder scheduling directly in TaskRow.
+**Fix:** Deleted the file. DateTimePicker (which ReminderModal depended on) is still used by CardDetailScreen directly.
+
+---
+
+### MCP Config Overhaul
+
+**Problem:** Firebase MCP was enabled but no agent/skill referenced it. Expo and frontend-design plugins were enabled but not wired. No orchestration pipeline defined.
+
+**Files changed:**
+
+| File | Changes |
+|------|---------|
+| `.mcp.json` | Added `plugins` section (expo, frontend-design). Wired `firebase` to `test_manager` and `wiki_manager`. Wired `firebase` to `code_review` and `documentation` skills. |
+| `.claude/agents/wiki_manager.md` | Added `mcp__firebase` to tools. Added MCP Tools section for Firestore data verification. |
+| `.claude/agents/test_manager.md` | Added `mcp__firebase` to tools. Added security rule validation workflow step. |
+| `.claude/skills/code_review/SKILL.md` | Added `mcp__firebase` to tools. Added Firebase Integration checklist. |
+| `.claude/skills/documentation/SKILL.md` | Added `mcp__firebase` to tools. Added firebase verification for data model docs. |
+| `CLAUDE.md` | Updated Agent/Skill descriptions. Added `.mcp.json` Configuration mapping tables. Added **Orchestration Pipeline** section with 5-step workflow diagram. |
+
+---
+
+### Test Results
+
+All 133 tests pass (9 suites). No regressions.
+
+---
+
+### Plan Created
+
+`wiki/next_steps_plan.md` — 6-phase plan for remaining work (validation, loading states, settings, tests, production readiness).
+
+---
+
 ## [2026-06-20] Job: Toast Notification System for Invitation Lifecycle
 
 **Status:** ✅ Success
