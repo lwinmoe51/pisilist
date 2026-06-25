@@ -41,7 +41,6 @@ export default function CardPreview({
   const isShared = currentUserId && card.ownerId !== currentUserId;
   const [menuVisible, setMenuVisible] = useState(false);
   const [colorPickerVisible, setColorPickerVisible] = useState(false);
-  const [cardLayout, setCardLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const s = themedStyles(colors, cardWidth);
 
   const accentColors = mode === 'dark' ? CARD_ACCENT_COLORS_DARK : CARD_ACCENT_COLORS;
@@ -53,7 +52,6 @@ export default function CardPreview({
   return (
     <View
       style={[s.cardWrapper, { width: cardWidth }]}
-      onLayout={(e) => setCardLayout(e.nativeEvent.layout)}
     >
       <TouchableOpacity
         style={[s.card, { backgroundColor: cardBg }, isShared && s.cardShared]}
@@ -384,7 +382,7 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], cardWidth: 
     },
     // ── Menu (absolute within cardWrapper) ──
     menuScrim: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       zIndex: 10,
     },
     menuDropdown: {
@@ -418,49 +416,6 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors'], cardWidth: 
     menuDivider: {
       height: 1,
       backgroundColor: colors.border,
-    },
-    // ── Color picker overlay ──
-    colorOverlay: {
-      flex: 1,
-      backgroundColor: colors.modalBg,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    colorSheet: {
-      backgroundColor: colors.surface,
-      borderRadius: 14,
-      padding: 20,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    colorTitle: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 14,
-      textAlign: 'center',
-    },
-    colorGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 10,
-      justifyContent: 'center',
-      marginBottom: 16,
-    },
-    colorSwatch: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      borderWidth: 2,
-      borderColor: 'transparent',
-    },
-    colorSwatchDefault: {
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    colorSwatchSelected: {
-      borderColor: colors.primary,
-      borderWidth: 3,
     },
     colorCancelBtn: {
       paddingVertical: 8,

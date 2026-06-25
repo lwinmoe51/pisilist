@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +12,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { signIn } from '../services/auth';
+import { validateEmail, validateRequired } from '../utils/validation';
 
 interface Props {
   navigation: any;
@@ -21,29 +21,31 @@ interface Props {
 const FORM_MAX_WIDTH = 400;
 
 export default function LoginScreen({ navigation }: Props) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const isWeb = Platform.OS === 'web';
   const formWidth = isWeb ? Math.min(width - 64, FORM_MAX_WIDTH) : width - 64;
 
   const handleLogin = async () => {
-    const alert = (title: string, msg: string) => {
-      Platform.OS === 'web' ? window.alert(`${title}\n\n${msg}`) : Alert.alert(title, msg);
-    };
+    setServerError(null);
+    const eErr = validateEmail(email);
+    const pErr = validateRequired(password, 'Password');
+    setEmailError(eErr);
+    setPasswordError(pErr);
+    if (eErr || pErr) return;
 
-    if (!email.trim() || !password) {
-      alert('Missing fields', 'Please enter both email and password.');
-      return;
-    }
     setLoading(true);
     const { error } = await signIn(email.trim(), password);
     setLoading(false);
     if (error) {
-      alert('Login failed', error.message);
+      setServerError(error.message);
     }
   };
 
@@ -59,24 +61,30 @@ export default function LoginScreen({ navigation }: Props) {
         <Text style={s.tagline}>"Simplicity in Team Tasks"</Text>
 
         <TextInput
-          style={s.input}
+          style={[s.input, emailError && s.inputError]}
           placeholder="Email Address"
           placeholderTextColor={colors.placeholder}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(t) => { setEmail(t); if (emailError) setEmailError(null); }}
+          onBlur={() => setEmailError(validateEmail(email))}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
         />
+        {emailError && <Text style={s.errorText}>{emailError}</Text>}
 
         <TextInput
-          style={s.input}
+          style={[s.input, passwordError && s.inputError]}
           placeholder="Password"
           placeholderTextColor={colors.placeholder}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(t) => { setPassword(t); if (passwordError) setPasswordError(null); }}
+          onBlur={() => setPasswordError(validateRequired(password, 'Password'))}
           secureTextEntry
         />
+        {passwordError && <Text style={s.errorText}>{passwordError}</Text>}
+
+        {serverError && <Text style={s.serverError}>{serverError}</Text>}
 
         <TouchableOpacity
           style={[s.button, loading && s.buttonDisabled]}
@@ -134,10 +142,27 @@ const themedStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
       paddingHorizontal: 14,
       paddingVertical: 12,
       fontSize: 16,
-      marginBottom: 14,
+      marginBottom: 4,
       color: colors.text,
       backgroundColor: colors.inputBg,
       boxShadow: colors.cardShadow,
+    },
+    inputError: {
+      borderWidth: 1,
+      borderColor: colors.danger,
+    },
+    errorText: {
+      color: colors.danger,
+      fontSize: 12,
+      marginBottom: 10,
+      marginLeft: 4,
+    },
+    serverError: {
+      color: colors.danger,
+      fontSize: 13,
+      textAlign: 'center',
+      marginBottom: 12,
+      marginTop: 4,
     },
     button: {
       backgroundColor: colors.primary,

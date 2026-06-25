@@ -147,7 +147,7 @@ describe('scheduleReminder', () => {
   });
 
   it('should use DATE trigger with correct timestamp', async () => {
-    const future = new Date('2026-06-20T15:30:00Z');
+    const future = new Date(Date.now() + 7200000);
 
     await scheduleReminder('t1', 'C', 'text', future);
 

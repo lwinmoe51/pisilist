@@ -109,11 +109,11 @@ MANDATORY for all UI/UX work. Whenever writing or modifying any component, scree
 
 ## Agent Responsibilities
 
-| Agent          | Trigger                                                               | Uses            |
-| -------------- | --------------------------------------------------------------------- | --------------- |
-| `git_manager`  | After every completed feature (tests pass, wiki updated)              | github plugin   |
-| `wiki_manager` | Use context7 for library docs; wiki files updated inline per workflow | context7 plugin |
-| `test_manager` | Write tests alongside new code; run `npm test` per workflow           | Jest            |
+| Agent          | Trigger                                                               | MCP Servers          |
+| -------------- | --------------------------------------------------------------------- | -------------------- |
+| `test_manager` | Write tests alongside new code; run `npm test` per workflow           | firebase             |
+| `wiki_manager` | Update wiki/ docs after every job; verify data shapes against firebase | context7, firebase   |
+| `git_manager`  | After every completed feature (tests pass, wiki updated)              | github               |
 
 ### Required Project Structure
 
@@ -139,25 +139,92 @@ pisilist/
 
 ### Agent Descriptions
 
-- **wiki_manager.md** — Uses `context7` plugin to fetch up-to-date library docs and cross-reference against the codebase. Updates `wiki/report.md`, `wiki/state.md`, and `wiki/code_flowchart.md` after every AI job. Ensures documentation stays accurate as dependencies and code evolve.
+- **test_manager.md** — Uses `firebase` MCP for Firestore security rule validation (`firebase_validate_security_rules`) and emulator testing. Writes and runs Jest tests, tracks coverage, and appends results to `wiki/report.md`. Must run before wiki_manager and git_manager.
+- **wiki_manager.md** — Uses `context7` for library API docs and `firebase` for reading deployed Firestore data structures, security rules, and project config. Updates `wiki/report.md`, `wiki/state.md`, and `wiki/code_flowchart.md` after every AI job. Verifies data model docs match deployed firebase state.
 - **git_manager.md** — Uses `github` plugin for all git operations: creating feature branches, committing changes with meaningful messages, opening PRs with summaries drawn from `wiki/report.md`, and linking issues to `wiki/state.md` blockers. Must be invoked after every feature is complete, tested, and wiki-updated.
-- **test_manager.md** — Manages the testing framework. Writes and runs tests (Jest for React Native + Expo), tracks coverage, and appends results to `wiki/report.md`. Ensures Firebase security rules are tested.
 
 ### Skill Descriptions
 
-- **code_review/SKILL.md** — Reviews code changes before they land. Uses `context7` to validate that React Native, Expo, and Firebase SDK APIs are used correctly and follow current best practices. Checks adherence to project coding standards.
-- **documentation/SKILL.md** — Generates and maintains project documentation. Uses `context7` to pull accurate API references for React Native, Expo, and Firebase when documenting components and data flows.
+- **code_review/SKILL.md** — Reviews code changes before they land. Uses `context7` to validate API correctness and `firebase` to validate Firestore security rules and data model consistency. Checks adherence to project coding standards.
+- **documentation/SKILL.md** — Generates and maintains project documentation. Uses `context7` for API references, `firebase` for verifying deployed Firestore data shapes and rules, and `frontend-design` for UI component documentation patterns.
 - **frontend-design (plugin skill)** — MUST be invoked before any UI/UX code change. Provides production-grade design patterns, responsive layout guidance, accessibility checks, dark mode patterns, and component composition architecture. Scoped to the pisilist project as `pisilist:frontend-design`.
+
+## Orchestration Pipeline
+
+Every feature follows this agent pipeline. Each step must complete before the next begins.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  1. WRITE CODE (main conversation)                                          │
+│     ↓                                                                       │
+│  2. TEST (test_manager agent)                                               │
+│     ├── npm test passes → continue                                          │
+│     └── npm test fails → fix code, re-run test_manager                      │
+│     ↓                                                                       │
+│  3. REVIEW (code_review skill)                                              │
+│     ├── API correctness via context7                                        │
+│     ├── Firebase rules validation via firebase MCP                          │
+│     └── Project pattern adherence                                           │
+│     ↓                                                                       │
+│  4. UPDATE WIKI (wiki_manager agent)                                        │
+│     ├── Append success/failure to wiki/report.md                            │
+│     ├── Overwrite wiki/state.md with current snapshot                       │
+│     └── Update wiki/code_flowchart.md if structure changed                  │
+│     ↓                                                                       │
+│  5. COMMIT (git_manager agent)                                              │
+│     ├── Create feature/<name> branch                                        │
+│     ├── Commit with descriptive message                                     │
+│     └── Open PR with summary from wiki/report.md                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Agent Invocation Order
+
+```
+test_manager  →  wiki_manager  →  git_manager
+     ↑                                    │
+     └──── code_review (before commit) ───┘
+```
+
+- **test_manager** runs first — gates all downstream work on passing tests
+- **code_review** runs after tests pass — validates code quality before wiki update
+- **wiki_manager** runs after review — logs the final state (success or fixed)
+- **git_manager** runs last — commits and opens PR only after wiki is current
+
+### When to Invoke Each
+
+| Step | Trigger | Skip Condition |
+|------|---------|----------------|
+| test_manager | Every code change | Never skip |
+| code_review | Every code change | Never skip |
+| wiki_manager | Every completed job | Never skip |
+| git_manager | Tests pass + wiki updated | Only if user says "don't commit" |
 
 ### .mcp.json Configuration
 
 The `.mcp.json` file declares:
 
-1. The Firebase MCP server (from the firebase plugin) for Firestore, Auth, and Cloud Functions operations
-2. The GitHub MCP server (from the github plugin) for repository operations
-3. The Context7 MCP server (from the context7 plugin) for library documentation lookups
-4. The Frontend Design MCP server (from the frontend-design plugin) for UI/UX design system guidance
-5. Project-level MCP tool definitions mapping these servers to the agents that use them (`wiki_manager`, `git_manager`, `test_manager`)
+**MCP Servers (3):**
+1. `firebase` — Plugin-based. Firestore, Auth, Cloud Functions, Security Rules operations
+2. `github` — Plugin-based. Repository operations (branches, commits, PRs, issues)
+3. `context7` — Standalone (`npx @upstash/context7-mcp`). Library/API documentation lookups
+
+**Plugins (2, declared for agent awareness):**
+1. `expo` — Expo SDK 56 docs, build/deploy guidance
+2. `frontend-design` — UI/UX design system patterns, mandatory for all .tsx work
+
+**Agent → MCP Server Mapping:**
+| Agent | MCP Servers |
+|-------|-------------|
+| `test_manager` | firebase |
+| `wiki_manager` | context7, firebase |
+| `git_manager` | github |
+
+**Skill → MCP Server Mapping:**
+| Skill | MCP Servers |
+|-------|-------------|
+| `code_review` | context7, firebase |
+| `documentation` | context7, firebase |
 
 ## Project Structure
 

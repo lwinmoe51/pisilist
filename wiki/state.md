@@ -1,6 +1,6 @@
 # State — pisilist
 
-> Last updated: 2026-06-20
+> Last updated: 2026-06-25
 
 ## Completed
 
@@ -88,6 +88,31 @@
 
 ## In Progress
 - None
+
+## Recently Completed (2026-06-25)
+
+### MCP Config Overhaul
+- ✅ Wired firebase MCP to test_manager, wiki_manager, code_review, documentation
+- ✅ Added plugins section to .mcp.json (expo, frontend-design)
+- ✅ Added Orchestration Pipeline to CLAUDE.md (test → review → wiki → commit)
+- ✅ All agents and skills now have proper MCP server mappings
+
+### Phase 1 Bug Fixes
+- ✅ Fixed failing notifications test (DATE trigger timing issue)
+- ✅ Fixed duplicate style keys in CardPreview.tsx (popover styles were being overwritten by dead overlay styles)
+- ✅ Removed dead code: ReminderModal.tsx (276 lines, never imported)
+- ✅ Removed unused cardLayout state from CardPreview
+- ✅ Fixed `absoluteFillObject` → `absoluteFill` TS error
+
+### Phase 2 Input Validation
+- ✅ Created `src/utils/validation.ts` — email, password, confirm, required, Firestore error mapper
+- ✅ LoginScreen — email format + required password, inline errors, server error display
+- ✅ SignUpScreen — email + password strength (8 chars + 1 number) + confirm match, live ✓/✗ indicators
+- ✅ ResetPasswordScreen — email format validation, inline errors
+- ✅ Removed all Alert.alert calls from auth screens (replaced with inline errors)
+
+### Plan
+- ✅ Created wiki/next_steps_plan.md — 6-phase plan for remaining work
 
 ## Pending
 
