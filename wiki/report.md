@@ -1,5 +1,38 @@
 # Report — pisilist
 
+## [2026-06-25] Job: Phase 5 — Auth Screen Tests (22 new tests)
+
+**Status:** ✅ Success
+**Summary:** Created test files for LoginScreen, SignUpScreen, and ResetPasswordScreen. 22 new tests covering form rendering, inline validation, service calls, error display, and navigation. Total: 155 tests (12 suites), all passing.
+
+---
+
+### New Test Files
+
+| File | Tests | What's Tested |
+|------|-------|---------------|
+| `src/__tests__/screens/LoginScreen.test.tsx` | 8 | Renders inputs, empty email error, invalid email error, empty password error, signIn call, server error display, navigate to SignUp/ResetPassword |
+| `src/__tests__/screens/SignUpScreen.test.tsx` | 8 | Renders all inputs, invalid email error, password strength indicators, mismatch error, signUp with display name, email prefix fallback, server error, navigate back |
+| `src/__tests__/screens/ResetPasswordScreen.test.tsx` | 6 | Renders input, empty email error, invalid email error, resetPassword call + success state, server error, navigate back |
+
+### Testing Pattern
+
+- `@testing-library/react-native` v14 with async `render()` (`await render(...)`)
+- All `fireEvent` calls wrapped in `act(async () => {...})` to flush React state updates
+- ThemeContext mocked via `jest.mock` (returns light theme colors)
+- Auth services mocked via `jest.mock('../../services/auth', ...)`
+- `useWindowDimensions` mocked to return fixed 800x600
+- Navigation prop mocked as `{ navigate: jest.fn(), goBack: jest.fn() }`
+
+### Test Results
+
+**155 tests (12 suites), all passing.**
+
+Previous: 133 tests (9 suites)
+New: +22 tests, +3 suites
+
+---
+
 ## [2026-06-25] Fix: Change Password Modal Spacing
 
 **Status:** ✅ Success
