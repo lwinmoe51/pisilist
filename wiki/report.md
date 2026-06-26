@@ -26,10 +26,28 @@
 
 ### Test Results
 
-**155 tests (12 suites), all passing.**
+**165 tests (14 suites), all passing.**
 
 Previous: 133 tests (9 suites)
-New: +22 tests, +3 suites
+New: +32 tests, +5 suites
+
+---
+
+## [2026-06-25] Job: Phase 5 — ConfirmModal + Toast Tests (10 new tests)
+
+**Status:** ✅ Success
+**Summary:** Created ConfirmModal (6 tests) and Toast (4 tests) component tests. Total: 165 tests (14 suites).
+
+### New Test Files
+
+| File | Tests | What's Tested |
+|------|-------|---------------|
+| `src/__tests__/components/ConfirmModal.test.tsx` | 6 | Renders title/message, default/custom confirm label, onConfirm callback, onCancel callback, hidden when not visible |
+| `src/__tests__/components/Toast.test.tsx` | 4 | Success/error/info message rendering, hidden when not visible |
+
+### Test Results
+
+**165 tests (14 suites), all passing.**
 
 ---
 
