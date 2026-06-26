@@ -121,6 +121,12 @@
 - ✅ SignUpScreen — optional Display Name field (falls back to email prefix if empty)
 - ✅ Fixed Change Password modal spacing — each input wrapped in field container with 16px margin + labels
 
+### Phase 5 Test Coverage (partial)
+- ✅ LoginScreen tests — 8 tests (validation, service calls, navigation)
+- ✅ SignUpScreen tests — 8 tests (validation, strength indicators, display name, server error)
+- ✅ ResetPasswordScreen tests — 6 tests (validation, success flow, server error, navigation)
+- **Total: 155 tests (12 suites), up from 133 (9 suites)**
+
 ### Plan
 - ✅ Created wiki/next_steps_plan.md — 6-phase plan for remaining work
 
