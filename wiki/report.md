@@ -51,6 +51,25 @@ New: +32 tests, +5 suites
 
 ---
 
+## [2026-06-25] Job: Phase 5 — Context Tests (11 new tests)
+
+**Status:** ✅ Success
+**Summary:** Created ThemeContext (5 tests), CardsContext (3 tests), and InvitationsContext (3 tests) test files. Total: 176 tests (17 suites).
+
+### New Test Files
+
+| File | Tests | What's Tested |
+|------|-------|---------------|
+| `src/__tests__/contexts/ThemeContext.test.tsx` | 5 | Default system mode, light colors, switch to dark, switch back to light, AsyncStorage persistence |
+| `src/__tests__/contexts/CardsContext.test.tsx` | 3 | No user → loading false, subscribes to owned+collab queries, merges and sorts cards |
+| `src/__tests__/contexts/InvitationsContext.test.tsx` | 3 | No user → loading false, subscribes to pending invitations, displays invitations from listener |
+
+### Test Results
+
+**176 tests (17 suites), all passing.**
+
+---
+
 ## [2026-06-25] Fix: Change Password Modal Spacing
 
 **Status:** ✅ Success
