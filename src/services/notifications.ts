@@ -1,3 +1,4 @@
+import { log, warn } from "../utils/logger";
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
@@ -16,7 +17,7 @@ export async function setupNotifications(): Promise<boolean> {
     if ('Notification' in window && Notification.permission === 'default') {
       await Notification.requestPermission();
     }
-    console.log('[notifications] Web: using browser Notification API');
+    log('[notifications] Web: using browser Notification API');
     return 'Notification' in window && Notification.permission === 'granted';
   }
 
@@ -41,7 +42,7 @@ export async function setupNotifications(): Promise<boolean> {
   }
 
   if (finalStatus !== 'granted') {
-    console.warn('Notification permissions not granted');
+    warn('Notification permissions not granted');
     return false;
   }
 
@@ -76,7 +77,7 @@ export async function scheduleReminder(
     const id = `web-rem-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const delay = timestamp.getTime() - now.getTime();
 
-    console.log(`[notifications] Web: scheduling in ${Math.round(delay / 1000)}s —`, cardTitle);
+    log(`[notifications] Web: scheduling in ${Math.round(delay / 1000)}s —`, cardTitle);
 
     const timer = setTimeout(() => {
       if ('Notification' in window && Notification.permission === 'granted') {

@@ -1,3 +1,4 @@
+import { log, error } from "../utils/logger";
 import {
   collection,
   addDoc,
@@ -84,7 +85,7 @@ export async function acceptInvitation(
   userId: string,
   cardId: string,
 ): Promise<void> {
-  console.log('[invitations.accept] request:', { inviteId, userId, cardId });
+  log('[invitations.accept] request:', { inviteId, userId, cardId });
   try {
     const batch = writeBatch(db);
     // Step 1: Mark invitation as accepted
@@ -94,21 +95,21 @@ export async function acceptInvitation(
       collaborators: arrayUnion(userId),
     });
     await batch.commit();
-    console.log('[invitations.accept] success');
+    log('[invitations.accept] success');
   } catch (err: any) {
-    console.error('[invitations.accept] error:', err);
+    error('[invitations.accept] error:', err);
     throw err;
   }
 }
 
 /** Decline an invitation. */
 export async function declineInvitation(inviteId: string): Promise<void> {
-  console.log('[invitations.decline] request:', { inviteId });
+  log('[invitations.decline] request:', { inviteId });
   try {
     await updateDoc(invitationDoc(inviteId), { status: 'declined' });
-    console.log('[invitations.decline] success');
+    log('[invitations.decline] success');
   } catch (err: any) {
-    console.error('[invitations.decline] error:', err);
+    error('[invitations.decline] error:', err);
     throw err;
   }
 }

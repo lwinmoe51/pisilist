@@ -1,5 +1,30 @@
 # Report — pisilist
 
+## [2026-06-25] Job: Phase 6 — Production Readiness (partial)
+
+**Status:** ✅ Success
+**Summary:** Created logger utility, replaced 84 console.log/error calls across services and screens, fixed app.json dark mode config, removed unused imports.
+
+### Changes
+
+| Area | Change |
+|------|--------|
+| `src/utils/logger.ts` | **NEW** — `log`/`warn`/`error` that are no-ops in production |
+| `src/services/cards.ts` | Replaced 24 console.log/error → log/error from logger |
+| `src/services/invitations.ts` | Replaced 6 console.log/error → log/error from logger |
+| `src/services/notifications.ts` | Replaced 2 console.log/warn → log/warn from logger |
+| `src/screens/DashboardScreen.tsx` | Replaced console calls, removed unused `orderBy`/`where`/`db` imports |
+| `src/screens/CardDetailScreen.tsx` | Replaced console calls |
+| `src/screens/InvitationsScreen.tsx` | Replaced console calls |
+| `src/screens/SettingsScreen.tsx` | Replaced console calls |
+| `app.json` | `userInterfaceStyle: "light"` → `"automatic"` |
+
+### Test Results
+
+**176 tests (17 suites), all passing.**
+
+---
+
 ## [2026-06-25] Job: Phase 5 — Auth Screen Tests (22 new tests)
 
 **Status:** ✅ Success
