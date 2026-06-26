@@ -1,3 +1,4 @@
+import { log, error } from "../utils/logger";
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -14,7 +15,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { onSnapshot, query, orderBy, where } from 'firebase/firestore';
+import { onSnapshot, query } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { useCards } from '../contexts/CardsContext';
 import { useInvitations } from '../contexts/InvitationsContext';
@@ -26,7 +27,6 @@ import {
   tasksQuery,
   docToTask,
 } from '../services/cards';
-import { db } from '../config/firebase';
 import CardPreview from '../components/CardPreview';
 import ConfirmModal from '../components/ConfirmModal';
 import SkeletonCard from '../components/SkeletonCard';
@@ -168,13 +168,13 @@ export default function DashboardScreen({ navigation }: Props) {
       return;
     }
     if (!user) return;
-    console.log('[UI] handleCreateCard:', { uid: user.uid, title });
+    log('[UI] handleCreateCard:', { uid: user.uid, title });
     setCreating(true);
     try {
       await createCard(user.uid, title);
-      console.log('[UI] handleCreateCard SUCCESS');
+      log('[UI] handleCreateCard SUCCESS');
     } catch (err: any) {
-      console.error('[UI] handleCreateCard FAILED:', err);
+      error('[UI] handleCreateCard FAILED:', err);
       Alert.alert('Error', err.message || 'Failed to create card.');
     }
     setCreating(false);
@@ -190,23 +190,23 @@ export default function DashboardScreen({ navigation }: Props) {
   const handleTogglePin = useCallback(async (cardId: string) => {
     const card = cards.find((c) => c.id === cardId);
     if (!card) return;
-    console.log('[UI] handleTogglePin:', { cardId, currentPinned: card.pinned });
+    log('[UI] handleTogglePin:', { cardId, currentPinned: card.pinned });
     try {
       await updateCardCosmetic(cardId, { pinned: !card.pinned });
-      console.log('[UI] handleTogglePin SUCCESS');
+      log('[UI] handleTogglePin SUCCESS');
     } catch (err: any) {
-      console.error('[UI] handleTogglePin FAILED:', err);
+      error('[UI] handleTogglePin FAILED:', err);
       Alert.alert('Error', err.message);
     }
   }, [cards]);
 
   const handleChangeColor = useCallback(async (cardId: string, color: string | null) => {
-    console.log('[UI] handleChangeColor:', { cardId, color });
+    log('[UI] handleChangeColor:', { cardId, color });
     try {
       await updateCardCosmetic(cardId, { color });
-      console.log('[UI] handleChangeColor SUCCESS');
+      log('[UI] handleChangeColor SUCCESS');
     } catch (err: any) {
-      console.error('[UI] handleChangeColor FAILED:', err);
+      error('[UI] handleChangeColor FAILED:', err);
       Alert.alert('Error', err.message);
     }
   }, []);
@@ -214,17 +214,17 @@ export default function DashboardScreen({ navigation }: Props) {
   const handleDeleteCard = useCallback((cardId: string) => {
     const card = cards.find((c) => c.id === cardId);
     const title = card?.title || 'this card';
-    console.log('[UI] handleDeleteCard clicked, cardId:', cardId);
+    log('[UI] handleDeleteCard clicked, cardId:', cardId);
     showConfirm(
       'Delete Card',
       `Delete "${title}" and all its tasks?`,
       async () => {
         try {
-          console.log('[UI] handleDeleteCard calling deleteCardService...');
+          log('[UI] handleDeleteCard calling deleteCardService...');
           await deleteCardService(cardId);
-          console.log('[UI] handleDeleteCard SUCCESS');
+          log('[UI] handleDeleteCard SUCCESS');
         } catch (err: any) {
-          console.error('[UI] handleDeleteCard FAILED:', err);
+          error('[UI] handleDeleteCard FAILED:', err);
           Alert.alert('Error', err.message || String(err));
         }
       },

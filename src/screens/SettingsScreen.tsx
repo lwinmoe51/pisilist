@@ -1,3 +1,4 @@
+import { log, error } from "../utils/logger";
 import React, { useState } from 'react';
 import {
   View,
@@ -126,7 +127,7 @@ export default function SettingsScreen({ navigation }: Props) {
       try {
         await logOut();
       } catch (err: any) {
-        console.error('[UI] handleSignOut FAILED:', err);
+        error('[UI] handleSignOut FAILED:', err);
       }
     }
   };

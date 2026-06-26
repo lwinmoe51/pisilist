@@ -1,3 +1,4 @@
+import { log, error } from "../utils/logger";
 import React, { useState } from 'react';
 import {
   View,
@@ -48,14 +49,14 @@ export default function InvitationsScreen({ navigation }: Props) {
 
   const handleAccept = async (inv: Invitation) => {
     if (!user) return;
-    console.log('[UI] handleAccept:', { inviteId: inv.id, cardId: inv.cardId, cardTitle: inv.cardTitle });
+    log('[UI] handleAccept:', { inviteId: inv.id, cardId: inv.cardId, cardTitle: inv.cardTitle });
     setProcessingIds((prev) => new Set(prev).add(inv.id));
     try {
       await acceptInvitation(inv.id, user.uid, inv.cardId);
-      console.log('[UI] handleAccept SUCCESS');
+      log('[UI] handleAccept SUCCESS');
       showToast(`Accepted "${inv.cardTitle}" — it's now on your dashboard`, 'success');
     } catch (err: any) {
-      console.error('[UI] handleAccept FAILED:', err);
+      error('[UI] handleAccept FAILED:', err);
       showToast(err.message || 'Failed to accept invitation.', 'error');
     }
     setProcessingIds((prev) => {
@@ -66,14 +67,14 @@ export default function InvitationsScreen({ navigation }: Props) {
   };
 
   const handleDecline = async (inv: Invitation) => {
-    console.log('[UI] handleDecline:', { inviteId: inv.id });
+    log('[UI] handleDecline:', { inviteId: inv.id });
     setProcessingIds((prev) => new Set(prev).add(inv.id));
     try {
       await declineInvitation(inv.id);
-      console.log('[UI] handleDecline SUCCESS');
+      log('[UI] handleDecline SUCCESS');
       showToast(`Declined "${inv.cardTitle}"`, 'info');
     } catch (err: any) {
-      console.error('[UI] handleDecline FAILED:', err);
+      error('[UI] handleDecline FAILED:', err);
       showToast(err.message || 'Failed to decline invitation.', 'error');
     }
     setProcessingIds((prev) => {

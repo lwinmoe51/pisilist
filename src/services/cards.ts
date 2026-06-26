@@ -1,3 +1,4 @@
+import { log, error } from "../utils/logger";
 import {
   collection,
   addDoc,
@@ -49,7 +50,7 @@ export async function createCard(
   uid: string,
   title: string,
 ): Promise<string> {
-  console.log('[cards.createCard] request:', { uid, title });
+  log('[cards.createCard] request:', { uid, title });
   try {
     const docRef = await addDoc(cardCollection(), {
       title: title.trim() || 'Untitled',
@@ -62,10 +63,10 @@ export async function createCard(
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
-    console.log('[cards.createCard] success:', { id: docRef.id });
+    log('[cards.createCard] success:', { id: docRef.id });
     return docRef.id;
   } catch (err) {
-    console.error('[cards.createCard] error:', err);
+    error('[cards.createCard] error:', err);
     throw err;
   }
 }
@@ -75,15 +76,15 @@ export async function updateCard(
   cardId: string,
   data: Partial<Pick<Card, 'title' | 'pinned' | 'color'>>,
 ): Promise<void> {
-  console.log('[cards.updateCard] request:', { cardId, data });
+  log('[cards.updateCard] request:', { cardId, data });
   try {
     await updateDoc(cardDoc(cardId), {
       ...data,
       updatedAt: serverTimestamp(),
     });
-    console.log('[cards.updateCard] success');
+    log('[cards.updateCard] success');
   } catch (err) {
-    console.error('[cards.updateCard] error:', err);
+    error('[cards.updateCard] error:', err);
     throw err;
   }
 }
@@ -97,7 +98,7 @@ export async function updateCardCosmetic(
   cardId: string,
   data: Partial<Pick<Card, 'pinned' | 'color'>>,
 ): Promise<void> {
-  console.log('[cards.updateCardCosmetic] request:', { cardId, data });
+  log('[cards.updateCardCosmetic] request:', { cardId, data });
   try {
     const update: Record<string, any> = { ...data };
     // Set timestamp on pin/unpin to control sort position
@@ -105,31 +106,31 @@ export async function updateCardCosmetic(
       update.updatedAt = serverTimestamp();
     }
     await updateDoc(cardDoc(cardId), update);
-    console.log('[cards.updateCardCosmetic] success');
+    log('[cards.updateCardCosmetic] success');
   } catch (err) {
-    console.error('[cards.updateCardCosmetic] error:', err);
+    error('[cards.updateCardCosmetic] error:', err);
     throw err;
   }
 }
 
 /** Delete a card and all its tasks in a single batch. */
 export async function deleteCard(cardId: string): Promise<void> {
-  console.log('[cards.deleteCard] request:', { cardId });
+  log('[cards.deleteCard] request:', { cardId });
   try {
     const tasksSnap = await getDocs(tasksCollection(cardId));
-    console.log('[cards.deleteCard] found', tasksSnap.docs.length, 'tasks to delete');
+    log('[cards.deleteCard] found', tasksSnap.docs.length, 'tasks to delete');
     const batch = writeBatch(db);
 
     for (const taskDocSnap of tasksSnap.docs) {
-      console.log('[cards.deleteCard] batching task delete:', taskDocSnap.id);
+      log('[cards.deleteCard] batching task delete:', taskDocSnap.id);
       batch.delete(taskDocSnap.ref);
     }
     batch.delete(cardDoc(cardId));
 
     await batch.commit();
-    console.log('[cards.deleteCard] success — card +', tasksSnap.docs.length, 'tasks deleted');
+    log('[cards.deleteCard] success — card +', tasksSnap.docs.length, 'tasks deleted');
   } catch (err) {
-    console.error('[cards.deleteCard] error:', err);
+    error('[cards.deleteCard] error:', err);
     throw err;
   }
 }
@@ -141,7 +142,7 @@ export async function createTask(
   cardId: string,
   text: string,
 ): Promise<string> {
-  console.log('[cards.createTask] request:', { cardId, text });
+  log('[cards.createTask] request:', { cardId, text });
   try {
     // Get current max order
     const q = query(tasksCollection(cardId), orderBy('order', 'desc'));
@@ -164,10 +165,10 @@ export async function createTask(
       updatedAt: serverTimestamp(),
     });
 
-    console.log('[cards.createTask] success:', { id: docRef.id, order: maxOrder + 1 });
+    log('[cards.createTask] success:', { id: docRef.id, order: maxOrder + 1 });
     return docRef.id;
   } catch (err) {
-    console.error('[cards.createTask] error:', err);
+    error('[cards.createTask] error:', err);
     throw err;
   }
 }
@@ -178,12 +179,12 @@ export async function updateTask(
   taskId: string,
   data: Partial<Pick<Task, 'text' | 'assignee'>>,
 ): Promise<void> {
-  console.log('[cards.updateTask] request:', { cardId, taskId, data });
+  log('[cards.updateTask] request:', { cardId, taskId, data });
   try {
     await updateDoc(taskDoc(cardId, taskId), data);
-    console.log('[cards.updateTask] success');
+    log('[cards.updateTask] success');
   } catch (err) {
-    console.error('[cards.updateTask] error:', err);
+    error('[cards.updateTask] error:', err);
     throw err;
   }
 }
@@ -194,7 +195,7 @@ export async function toggleTask(
   taskId: string,
   completed: boolean,
 ): Promise<void> {
-  console.log('[cards.toggleTask] request:', { cardId, taskId, completed });
+  log('[cards.toggleTask] request:', { cardId, taskId, completed });
   try {
     const batch = writeBatch(db);
     batch.update(taskDoc(cardId, taskId), { completed });
@@ -203,9 +204,9 @@ export async function toggleTask(
       updatedAt: serverTimestamp(),
     });
     await batch.commit();
-    console.log('[cards.toggleTask] success');
+    log('[cards.toggleTask] success');
   } catch (err) {
-    console.error('[cards.toggleTask] error:', err);
+    error('[cards.toggleTask] error:', err);
     throw err;
   }
 }
@@ -216,7 +217,7 @@ export async function deleteTask(
   taskId: string,
   wasCompleted: boolean,
 ): Promise<void> {
-  console.log('[cards.deleteTask] request:', { cardId, taskId, wasCompleted });
+  log('[cards.deleteTask] request:', { cardId, taskId, wasCompleted });
   try {
     const batch = writeBatch(db);
     batch.delete(taskDoc(cardId, taskId));
@@ -229,9 +230,9 @@ export async function deleteTask(
     }
     batch.update(cardDoc(cardId), cardUpdate);
     await batch.commit();
-    console.log('[cards.deleteTask] success');
+    log('[cards.deleteTask] success');
   } catch (err) {
-    console.error('[cards.deleteTask] error:', err);
+    error('[cards.deleteTask] error:', err);
     throw err;
   }
 }
@@ -241,15 +242,15 @@ export async function addCollaborator(
   cardId: string,
   userId: string,
 ): Promise<void> {
-  console.log('[cards.addCollaborator] request:', { cardId, userId });
+  log('[cards.addCollaborator] request:', { cardId, userId });
   try {
     await updateDoc(cardDoc(cardId), {
       collaborators: arrayUnion(userId),
       updatedAt: serverTimestamp(),
     });
-    console.log('[cards.addCollaborator] success');
+    log('[cards.addCollaborator] success');
   } catch (err) {
-    console.error('[cards.addCollaborator] error:', err);
+    error('[cards.addCollaborator] error:', err);
     throw err;
   }
 }
@@ -260,12 +261,12 @@ export async function updateTaskReminders(
   taskId: string,
   reminders: Reminder[],
 ): Promise<void> {
-  console.log('[cards.updateTaskReminders] request:', { cardId, taskId, count: reminders.length });
+  log('[cards.updateTaskReminders] request:', { cardId, taskId, count: reminders.length });
   try {
     await updateDoc(taskDoc(cardId, taskId), { reminders });
-    console.log('[cards.updateTaskReminders] success');
+    log('[cards.updateTaskReminders] success');
   } catch (err) {
-    console.error('[cards.updateTaskReminders] error:', err);
+    error('[cards.updateTaskReminders] error:', err);
     throw err;
   }
 }

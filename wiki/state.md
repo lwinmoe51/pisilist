@@ -132,6 +132,12 @@
 - ✅ InvitationsContext tests — 3 tests (loading, subscription, listener display)
 - **Total: 176 tests (17 suites), up from 133 (9 suites)**
 
+### Phase 6 Production Readiness
+- ✅ Created `src/utils/logger.ts` — conditional logging (no-ops in production)
+- ✅ Replaced 84 console.log/error calls across services and screens with logger
+- ✅ Fixed `app.json` userInterfaceStyle: "light" → "automatic"
+- ✅ Removed unused imports (orderBy, where, db) from DashboardScreen
+
 ### Plan
 - ✅ Created wiki/next_steps_plan.md — 6-phase plan for remaining work
 
