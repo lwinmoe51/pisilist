@@ -89,6 +89,17 @@
 ## In Progress
 - None
 
+## Recently Completed (2026-06-27)
+
+### PWA Implementation
+- ✅ `public/service-worker.js` — cache-first for static assets, network-first for HTML (SPA routing)
+- ✅ `scripts/inject-pwa-meta.js` — post-build script: generates manifest.json, copies icons + SW into dist/, injects meta tags + SW registration into index.html
+- ✅ PWA icons: `assets/icon-192.png`, `assets/icon-512.png`, `assets/maskable-icon-512.png`
+- ✅ `app.json` web config: manifest icons, themeColor, standalone display
+- ✅ `npm run build:web` — exports web + injects PWA meta
+- ✅ `npm run serve:dist` — serves built dist/ for local PWA testing
+- ✅ Install prompt verified working in Chrome (localhost:3000)
+
 ## Recently Completed (2026-06-25)
 
 ### MCP Config Overhaul
@@ -144,10 +155,9 @@
 ## Pending
 
 ### High Priority
-- [ ] **Mobile testing** — Test entire app on Android device (Expo Go or dev build)
-- [ ] **Input validation** — Email format, password strength, required field checks
-- [ ] **Error handling** — User-friendly error messages for all failure cases
-- [ ] **Loading states** — Skeleton loaders for all data-fetching screens
+- [x] **PWA Implementation** — Install prompt, service worker, offline shell. Verified working.
+- [ ] **Mobile Bug Fix** — CardDetail create-task button not visible on Android APK.
+- [ ] **Deploy web to Firebase Hosting** — Deploy PWA build with `firebase deploy --only hosting`.
 
 ### Medium Priority
 - [ ] **User profile management** — Edit displayName, profile picture upload
@@ -165,22 +175,29 @@
 - [ ] **Export data** — JSON/CSV export of cards and tasks
 - [ ] **App store deployment** — Google Play Store + Apple App Store
 
+## Known Bugs
+
+### Mobile APK — CardDetail: Create Task button not visible
+- **Platform:** Android APK only. Web version works fine.
+- **Description:** The "Create Task" button/input is not visible on the CardDetail page on mobile. Tasks created by invited contributors are also not visible in CardDetail on mobile.
+- **Suspected cause:** Layout overflow or platform-specific rendering. The task input + button may be clipped below the fold on smaller screens, or FlatList/ScrollView nesting differs between web and native.
+- **Status:** Documented for future fix.
+
 ## Blockers
 - None
 
 ## Test Coverage
 
 ```
-Test Suites: 9 passed, 9 total
-Tests:       133 passed, 133 total
+Test Suites: 17 passed, 17 total
+Tests:       176 passed, 176 total
 
 Services: 108 tests (auth: 25, cards: 38, users: 12, invitations: 15, notifications: 18)
+Auth Screens: 22 tests (LoginScreen: 8, SignUpScreen: 8, ResetPasswordScreen: 6)
+Components: 10 tests (ConfirmModal: 6, Toast: 4)
+Contexts: 11 tests (ThemeContext: 5, CardsContext: 3, InvitationsContext: 3)
 Types: 7 tests
 Config: 3 tests
-Components: 13 tests (CardPreview: 100% coverage)
-Contexts: 3 tests (AuthContext: 88% coverage)
-
-Screens: 0% (require React Native Testing Library + Firebase mock setup)
 ```
 
 ## Key Commands
@@ -188,7 +205,9 @@ Screens: 0% (require React Native Testing Library + Firebase mock setup)
 ```bash
 npm run web          # Expo dev server (local)
 npm run web:wsl      # Expo dev server (WSL2 → Windows browser)
-npm test             # Run Jest (133 tests)
+npm run build:web    # Build static web export to dist/ + inject PWA meta
+npm run serve:dist   # Serve built dist/ on localhost:3000 (PWA testing)
+npm test             # Run Jest (176 tests)
 npm run test:coverage # Jest + coverage report
 npx tsc --noEmit     # TypeScript type-check
 npx expo start       # Expo dev server (all platforms)
