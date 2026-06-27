@@ -157,7 +157,7 @@
 ### High Priority
 - [x] **PWA Implementation** — Install prompt, service worker, offline shell. Verified working.
 - [ ] **Mobile Bug Fix** — CardDetail create-task button not visible on Android APK.
-- [ ] **Deploy web to Firebase Hosting** — Deploy PWA build with `firebase deploy --only hosting`.
+- [x] **Deploy web to Firebase Hosting** — PWA build deployed to https://pisilist-app.web.app
 
 ### Medium Priority
 - [ ] **User profile management** — Edit displayName, profile picture upload

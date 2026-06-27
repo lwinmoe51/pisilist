@@ -1,5 +1,20 @@
 # Report — pisilist
 
+## [2026-06-27] Job: PWA Deployed to Firebase Hosting
+
+**Status:** ✅ Success
+**Summary:** Merged PR #1, built production web export with PWA meta injection, deployed to Firebase Hosting.
+
+### Steps
+1. Merged `feature/pwa-implementation` → `main` (PR #1)
+2. `npm run build:web` — built dist/ with PWA manifest, service worker, icons
+3. `firebase deploy --only hosting` — deployed 9 files to pisilist-app
+
+### Live URL
+https://pisilist-app.web.app — PWA install prompt should appear in Chrome.
+
+---
+
 ## [2026-06-27] Job: PWA Implementation — Verified Working
 
 **Status:** ✅ Success
