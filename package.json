@@ -33,7 +33,9 @@
     "web": "expo start --web",
     "web:wsl": "EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0 REACT_NATIVE_PACKAGER_HOSTNAME=$(hostname -I | awk '{print $1}') expo start --web",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "build:web": "npx expo export --platform web && node scripts/inject-pwa-meta.js",
+    "serve:dist": "npx serve dist -l 3000"
   },
   "private": true
 }

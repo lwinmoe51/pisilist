@@ -11,7 +11,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#1e1b4b",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -20,7 +20,35 @@
       "package": "com.lwinmoe51.pisilist"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "name": "pisilist",
+      "shortName": "pisilist",
+      "description": "Collaborative to-do list with shared cards and reminders",
+      "startUrl": "/",
+      "display": "standalone",
+      "orientation": "portrait",
+      "themeColor": "#1a1a2e",
+      "backgroundColor": "#1a1a2e",
+      "icons": [
+        {
+          "src": "./assets/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "./assets/icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "./assets/maskable-icon-512.png",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "maskable"
+        }
+      ]
     },
     "plugins": [
       "@react-native-community/datetimepicker"

@@ -1,5 +1,39 @@
 # Report — pisilist
 
+## [2026-06-27] Job: PWA Implementation — Verified Working
+
+**Status:** ✅ Success
+**Summary:** Full PWA implementation with service worker, manifest, icons, and post-build injection script. Install prompt verified working in Chrome at localhost:3000.
+
+### Changes
+
+| Area | Change |
+|------|--------|
+| `public/service-worker.js` | Cache-first for static assets, network-first for HTML SPA routing |
+| `scripts/inject-pwa-meta.js` | Post-build: generates manifest.json, copies icons + SW into dist/, injects meta tags + SW registration |
+| `assets/icon-192.png` | PWA icon 192x192 |
+| `assets/icon-512.png` | PWA icon 512x512 |
+| `assets/maskable-icon-512.png` | Maskable icon with safe zone padding |
+| `app.json` | Web manifest config: icons, themeColor, standalone display |
+| `package.json` | Added `build:web` and `serve:dist` scripts |
+| `wiki/state.md` | Updated Key Commands, marked PWA complete |
+| `wiki/code_flowchart.md` | Updated Key Commands |
+
+### How to build & test PWA
+
+```bash
+npm run build:web    # Build + inject PWA meta → dist/
+npm run serve:dist   # Serve dist/ on http://localhost:3000
+```
+
+Chrome install icon appears at `http://localhost:3000`. Service worker registers and caches app shell.
+
+### Test Results
+
+176 tests (17 suites), all passing.
+
+---
+
 ## [2026-06-25] Job: Phase 6 — Production Readiness (partial)
 
 **Status:** ✅ Success

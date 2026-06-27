@@ -242,11 +242,12 @@ Screens: 0% (require React Native Testing Library + Firebase mock setup)
 ```bash
 npm run web              # Expo dev server (local)
 npm run web:wsl          # Expo dev server (WSL2 → Windows browser)
-npm test                 # Run Jest (133 tests)
+npm test                 # Run Jest (176 tests)
 npm run test:coverage    # Jest + coverage report
 npx tsc --noEmit         # TypeScript type-check
 npx expo start           # Expo dev server (all platforms)
-npx expo export --platform web  # Build web export to dist/
+npm run build:web        # Build static web export + inject PWA meta → dist/
+npm run serve:dist       # Serve built dist/ on localhost:3000 (PWA testing)
 firebase deploy --only hosting  # Deploy to Firebase Hosting
 firebase deploy --only firestore:rules  # Deploy Firestore rules
 ```
