@@ -5,6 +5,7 @@ import { ThemeProvider } from './src/theme/ThemeContext';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { CardsProvider } from './src/contexts/CardsContext';
 import { InvitationsProvider } from './src/contexts/InvitationsContext';
+import { NotificationSyncProvider } from './src/contexts/NotificationSyncContext';
 import { setupNotifications } from './src/services/notifications';
 import RootNavigator from './src/navigation/AppNavigator';
 
@@ -18,9 +19,11 @@ export default function App() {
         <AuthProvider>
           <CardsProvider>
             <InvitationsProvider>
-              <NavigationContainer>
-                <RootNavigator />
-              </NavigationContainer>
+              <NotificationSyncProvider>
+                <NavigationContainer>
+                  <RootNavigator />
+                </NavigationContainer>
+              </NotificationSyncProvider>
             </InvitationsProvider>
           </CardsProvider>
         </AuthProvider>

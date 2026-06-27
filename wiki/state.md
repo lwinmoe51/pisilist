@@ -65,6 +65,7 @@
 - ✅ Platform-aware: `expo-notifications` on Android/iOS, browser Notification API on web
 - ✅ `setTimeout` + `new Notification()` fallback for web
 - ✅ Cancel reminders (single + all for task)
+- ✅ Multi-device sync — NotificationSyncProvider listens to all cards' tasks via onSnapshot, clears stale local timers, re-schedules only future reminders when Firestore data changes
 
 ### Theme & Design
 - ✅ Dark mode with system preference detection + manual toggle
@@ -141,7 +142,7 @@
 - ✅ ThemeContext tests — 5 tests (mode switching, persistence, color tokens)
 - ✅ CardsContext tests — 3 tests (loading, subscriptions, merge/sort)
 - ✅ InvitationsContext tests — 3 tests (loading, subscription, listener display)
-- **Total: 176 tests (17 suites), up from 133 (9 suites)**
+- **Total: 185 tests (18 suites), up from 176 (17 suites)**
 
 ### Phase 6 Production Readiness
 - ✅ Created `src/utils/logger.ts` — conditional logging (no-ops in production)
@@ -189,10 +190,10 @@
 ## Test Coverage
 
 ```
-Test Suites: 17 passed, 17 total
-Tests:       176 passed, 176 total
+Test Suites: 18 passed, 18 total
+Tests:       185 passed, 185 total
 
-Services: 108 tests (auth: 25, cards: 38, users: 12, invitations: 15, notifications: 18)
+Services: 118 tests (auth: 25, cards: 38, users: 12, invitations: 15, notifications: 18, notificationSync: 10)
 Auth Screens: 22 tests (LoginScreen: 8, SignUpScreen: 8, ResetPasswordScreen: 6)
 Components: 10 tests (ConfirmModal: 6, Toast: 4)
 Contexts: 11 tests (ThemeContext: 5, CardsContext: 3, InvitationsContext: 3)

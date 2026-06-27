@@ -1,5 +1,44 @@
 # Report — pisilist
 
+## [2026-06-27] Job: Multi-Device Notification Sync Engine
+
+**Status:** ✅ Success
+**Summary:** Fixed multi-device notification sync bug. Built a reactive real-time sync engine using Firestore onSnapshot listeners that automatically re-schedules local notifications when reminders change from another device.
+
+### Problem
+
+Scheduling a reminder on device A updated Firestore, but device B (same account) never picked up the change because local timers/notifications were only set on the originating device.
+
+### Solution
+
+Three-layer architecture:
+1. **`src/services/notificationSync.ts`** — Core sync engine. `syncLocalNotifications(tasks, cardTitle)` clears ALL existing local timers/notifications, filters expired timestamps, re-schedules only future reminders.
+2. **`src/contexts/NotificationSyncContext.tsx`** — App-root provider that subscribes to all cards' tasks via `onSnapshot`. On any reminder change, calls the sync engine automatically.
+3. **`App.tsx`** — Wraps app in `<NotificationSyncProvider>`.
+
+### Key Behavior
+
+- **Web:** Clears all `setTimeout` timers from the webTimers Map, re-instantiates fresh timers for future timestamps
+- **Android:** Calls `cancelScheduledNotificationAsync` for all tracked IDs, re-schedules via `scheduleNotificationAsync` with fresh DATE triggers
+- **Expired filtering:** Reminders with `timestamp <= now` are skipped (no redundant alarms)
+- **Cross-device:** Device B's onSnapshot fires → sync engine picks up new reminders from device A → schedules locally
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `src/services/notificationSync.ts` | **NEW** — syncLocalNotifications, cancelAllScheduledReminders, resetSyncState |
+| `src/contexts/NotificationSyncContext.tsx` | **NEW** — Provider with per-card task onSnapshot listeners |
+| `App.tsx` | Added NotificationSyncProvider |
+| `src/screens/CardDetailScreen.tsx` | Simplified handleAddReminder/handleRemoveReminder to Firestore-only writes |
+| `src/__tests__/services/notificationSync.test.ts` | **NEW** — 10 tests for sync engine |
+
+### Test Results
+
+185 tests (18 suites), all passing.
+
+---
+
 ## [2026-06-27] Job: PWA Deployed to Firebase Hosting
 
 **Status:** ✅ Success

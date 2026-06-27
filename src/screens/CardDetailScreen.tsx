@@ -34,7 +34,6 @@ import {
 } from '../services/cards';
 import { sendInvitation } from '../services/invitations';
 import { getUsersByUids } from '../services/users';
-import { scheduleReminder, cancelReminder } from '../services/notifications';
 import { db } from '../config/firebase';
 import DateTimePicker from '../components/DateTimePicker';
 import ConfirmModal from '../components/ConfirmModal';
@@ -259,13 +258,12 @@ export default function CardDetailScreen({ navigation, route }: Props) {
   };
 
   // ── Inline reminder add ────────────────────────────────────────
+  // Only writes to Firestore — NotificationSyncProvider handles local scheduling
   const handleAddReminder = async (task: Task, ts: Date) => {
     if (!card) return;
     log('[UI] handleAddReminder:', { taskId: task.id, timestamp: ts.toISOString() });
     const reminder: Reminder = { id: `rem_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, timestamp: ts };
-    const notifId = await scheduleReminder(task.id, card.title, task.text, ts);
-    const saved = { ...reminder, notificationId: notifId };
-    const updated = [...task.reminders, saved];
+    const updated = [...task.reminders, reminder];
     try { await updateTaskReminders(cardId, task.id, updated); } catch (err: any) {
       error('[UI] handleAddReminder FAILED:', err);
       Alert.alert('Error', err.message || String(err));
@@ -273,10 +271,9 @@ export default function CardDetailScreen({ navigation, route }: Props) {
     setExpandReminder(null);
   };
 
+  // Only removes from Firestore — NotificationSyncProvider handles cancellation
   const handleRemoveReminder = async (task: Task, reminderId: string) => {
     log('[UI] handleRemoveReminder:', { taskId: task.id, reminderId });
-    const target = task.reminders.find((r) => r.id === reminderId);
-    if (target) await cancelReminder((target as any).notificationId ?? '');
     const updated = task.reminders.filter((r) => r.id !== reminderId);
     try { await updateTaskReminders(cardId, task.id, updated); } catch (err: any) {
       error('[UI] handleRemoveReminder FAILED:', err);

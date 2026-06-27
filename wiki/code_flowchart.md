@@ -28,11 +28,13 @@ pisilist/
 │   │   ├── cards.ts                         # Card & Task CRUD, updateCardCosmetic, batch ops, docToCard/docToTask
 │   │   ├── users.ts                         # upsertUser, findUserByEmail, getUserByUid, getUsersByUids
 │   │   ├── invitations.ts                   # sendInvitation, acceptInvitation (atomic batch), declineInvitation, onPendingInvitations
-│   │   └── notifications.ts                 # Platform-aware: expo-notifications (native) + setTimeout/browser Notification (web)
+│   │   ├── notifications.ts                 # Platform-aware: expo-notifications (native) + setTimeout/browser Notification (web)
+│   │   └── notificationSync.ts              # Sync engine: clears stale timers, re-schedules future reminders from Firestore snapshots
 │   ├── contexts/
 │   │   ├── AuthContext.tsx                   # AuthProvider + useAuth (onAuthStateChanged)
 │   │   ├── CardsContext.tsx                  # CardsProvider + useCards (dual onSnapshot, pinned ascending, others descending)
-│   │   └── InvitationsContext.tsx            # InvitationsProvider + useInvitations (onPendingInvitations)
+│   │   ├── InvitationsContext.tsx            # InvitationsProvider + useInvitations (onPendingInvitations)
+│   │   └── NotificationSyncContext.tsx       # NotificationSyncProvider: per-card task listeners → syncLocalNotifications
 │   ├── components/
 │   │   ├── CardPreview.tsx                  # Masonry card: flat design, 1px border, accent color, footer strip (pin 🎨 ⋮), task preview, ellipsis menu, color popover
 │   │   ├── AssigneePicker.tsx               # Bottom sheet: pick collaborator for per-task assignment
@@ -89,7 +91,8 @@ App.tsx
           └── AuthProvider (onAuthStateChanged)
               └── CardsProvider (dual onSnapshot: owned + collaborated, sorted: pinned asc, others desc)
                   └── InvitationsProvider (onPendingInvitations real-time)
-                      └── NavigationContainer
+                      └── NotificationSyncProvider (per-card task onSnapshot → syncLocalNotifications)
+                          └── NavigationContainer
                           └── RootNavigator (AppNavigator.tsx)
                               ├── [unauthenticated] AuthStack
                               │   ├── LoginScreen
@@ -242,7 +245,7 @@ Screens: 0% (require React Native Testing Library + Firebase mock setup)
 ```bash
 npm run web              # Expo dev server (local)
 npm run web:wsl          # Expo dev server (WSL2 → Windows browser)
-npm test                 # Run Jest (176 tests)
+npm test                 # Run Jest (185 tests)
 npm run test:coverage    # Jest + coverage report
 npx tsc --noEmit         # TypeScript type-check
 npx expo start           # Expo dev server (all platforms)
