@@ -5,49 +5,31 @@
       "plugin": "firebase@claude-plugins-official",
       "description": "Firebase MCP server for Firestore, Auth, Cloud Functions, and Security Rules operations"
     },
-    "github": {
-      "type": "plugin",
-      "plugin": "github@claude-plugins-official",
-      "description": "GitHub MCP server for repository operations — branches, commits, PRs, issues"
-    },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"],
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
       "description": "Context7 MCP server for up-to-date library/API documentation lookups (React Native, Expo, Firebase SDK)"
-    }
-  },
-  "plugins": {
-    "expo": {
-      "plugin": "expo@claude-plugins-official",
-      "description": "Expo SDK 56 docs, build/deploy guidance, EAS configuration"
     },
-    "frontend-design": {
-      "plugin": "frontend-design@claude-plugins-official",
-      "description": "UI/UX design system patterns, responsive layout, accessibility, dark mode. Mandatory for all .tsx work."
-    }
-  },
-  "agents": {
-    "wiki_manager": {
-      "mcpServers": ["context7", "firebase"],
-      "description": "Keeps wiki/ docs updated. Uses context7 for library API references and firebase for reading Firestore data structures, security rules, and project config to keep documentation accurate."
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {
+        "CHROME_PATH": "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe"
+      }
     },
-    "git_manager": {
-      "mcpServers": ["github"],
-      "description": "Manages git commits, branches, PRs via GitHub plugin."
-    },
-    "test_manager": {
-      "mcpServers": ["firebase"],
-      "description": "Manages Jest testing and coverage reporting. Uses firebase for Firestore security rule validation and emulator testing."
-    }
-  },
-  "skills": {
-    "code_review": {
-      "mcpServers": ["context7", "firebase"],
-      "description": "Reviews code using context7 to verify API correctness and firebase to validate Firestore security rules, data model consistency, and backend integration patterns."
-    },
-    "documentation": {
-      "mcpServers": ["context7", "firebase"],
-      "description": "Generates documentation with context7-verified API references and firebase-verified Firestore data structures and security rules."
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github@latest"
+      ]
     }
   }
 }

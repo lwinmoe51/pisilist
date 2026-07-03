@@ -24,7 +24,9 @@
     "@testing-library/react-native": "^14.0.0",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "ws": "^8.21.0",
+    "yauzl": "^3.4.0"
   },
   "scripts": {
     "start": "expo start",
