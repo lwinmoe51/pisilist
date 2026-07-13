@@ -29,6 +29,8 @@ The result is a lightweight, purpose-built tool that does exactly what's needed 
 
 ---
 
+## Screenshots
+
 ## MVP Features
 
 | Feature               | Description                                                                           |
