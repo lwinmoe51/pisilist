@@ -31,6 +31,34 @@ The result is a lightweight, purpose-built tool that does exactly what's needed 
 
 ## Screenshots
 
+## 01. Login page
+
+![Login Page](screenshots/01_login.png)
+
+## 02. Singup Page
+
+![Signup Page](screenshots/02_signup.png)
+
+## 03. Reset Password Page
+
+![Reset Password Page](screenshots/03_reset_password.png)
+
+## 04. Home page - Card Preview (masonry grid)
+
+![Home Page](screenshots/04_home_page_card_preview.png)
+
+## 05. Card Detail Page - Collaborator and Reminder Management
+
+![Card Detail Page](screenshots/05_card_detail_collab_reminder.png)
+
+## 06. Card Detail Page - Done tasks
+
+![Card Detail Page](screenshots/06_card_detail_done_task.png)
+
+## 07. Profile Page - User Settings
+
+![Profile Page](screenshots/07_profile.png)
+
 ## MVP Features
 
 | Feature               | Description                                                                           |
