@@ -54,7 +54,7 @@ See `IDEA.md` for full specification and user journeys. See `LAYOUT.md` for ASCI
 ```bash
 npm start               # Expo dev server
 npm run web             # Web target
-npm test                # Run Jest (22 tests, 4 suites)
+npm test                # Run Jest (185 tests, 18 suites)
 npm run test:coverage   # Jest + coverage report
 npx tsc --noEmit        # TypeScript type-check
 ```

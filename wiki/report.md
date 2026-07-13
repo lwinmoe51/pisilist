@@ -1377,3 +1377,52 @@ None. Rules compiled cleanly, all 22 tests pass.
 
 ### Errors
 None. All 55 tests pass. Coverage thresholds met.
+
+## [2026-07-13] Job: Tech Stack Audit & Documentation Correction
+
+**Status:** ✅ Success
+**Summary:** Investigated actual tech stack from codebase (package.json, imports, config files), compared with documentation, fixed discrepancies, and created Marp slides.
+
+### Actual Tech Stack (from code)
+
+| Package | Version | Was Documented? |
+|---|---|---|
+| react-native | 0.85.3 | ✅ Yes |
+| expo | 56.0.12 | ✅ Yes |
+| react | 19.2.3 | ❌ No (README missing) |
+| react-dom | 19.2.3 | ❌ No (README missing) |
+| firebase | 11.10.0 | ⚠️ Partial (no version) |
+| react-native-web | 0.21.2 | ❌ No (README missing) |
+| @react-native-async-storage/async-storage | 2.2.0 | ❌ No (README missing) |
+| @react-native-community/datetimepicker | 9.1.0 | ❌ No (README missing) |
+| @react-navigation/native-stack | 7.17.5 | ✅ Yes |
+| typescript | 6.0.3 | ✅ Yes |
+| jest | 29.7.0 | ✅ Yes |
+| @testing-library/react-native | 14.0.0 | ✅ Yes |
+
+### Discrepancies Found & Fixed
+
+| File | Issue | Fix |
+|---|---|---|
+| `CLAUDE.md:57` | Said "22 tests, 4 suites" | Changed to "185 tests, 18 suites" |
+| `wiki/state.md:211` | Said "176 tests" | Changed to "185 tests" |
+| `wiki/code_flowchart.md:238` | Said "Services: 108 tests" (missing notificationSync) | Changed to "118 tests" (+ notificationSync: 10) |
+| `README.md` tech table | Missing react-native-web, AsyncStorage, datetimepicker, PWA, React 19 | Added all missing dependencies |
+
+### New File Created
+
+| File | Description |
+|---|---|
+| `slides/tech-stack.md` | 10-slide Marp deck covering full tech stack (Frontend, Web, Backend, Navigation, State, Notifications, Testing, DevOps, Dependencies) |
+| `slides/tech-stack.html` | Rendered HTML from Marp for browser viewing |
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| `CLAUDE.md` | Fixed test count (22→185) |
+| `README.md` | Updated Tech Stack table with 11 rows (was 7) |
+| `wiki/state.md` | Fixed test count (176→185) |
+| `wiki/code_flowchart.md` | Fixed service test count (108→118) |
+| `slides/tech-stack.md` | **NEW** — Marp slides |
+| `slides/tech-stack.html` | **NEW** — Rendered HTML |

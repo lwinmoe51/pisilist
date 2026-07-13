@@ -235,7 +235,7 @@ Usage:
 Test Suites: 9 passed, 9 total
 Tests:       133 passed, 133 total
 
-Services: 108 tests (auth: 25, cards: 38, users: 12, invitations: 15, notifications: 18)
+Services: 118 tests (auth: 25, cards: 38, users: 12, invitations: 15, notifications: 18, notificationSync: 10)
 Types: 7 | Config: 3 | Components: 13 (CardPreview: 100%) | Contexts: 3 (AuthContext: 88%)
 Screens: 0% (require React Native Testing Library + Firebase mock setup)
 ```

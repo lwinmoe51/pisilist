@@ -180,6 +180,21 @@ firebase deploy --only firestore:rules --project pisilist-app
 
 | Layer         | Technology                                                   |
 | ------------- | ------------------------------------------------------------ |
+| Frontend      | React Native 0.85.3 + React 19.2 + Expo SDK 56               |
+| Web Support   | react-native-web 0.21 + react-dom 19.2                       |
+| Backend       | Firebase 11 (Firestore + Auth + Hosting)                     |
+| Navigation    | React Navigation 7 (native-stack)                            |
+| State         | React Context + Firestore real-time listeners                |
+| Notifications | Expo Notifications (native) / Browser Notification API (web) |
+| Storage       | @react-native-async-storage/async-storage (theme persistence)|
+| UI Components | @react-native-community/datetimepicker 9.1                    |
+| PWA           | Service Worker + Web Manifest (inject-pwa-meta.js)           |
+| Testing       | Jest 29 + @testing-library/react-native 14                   |
+| Language      | TypeScript 6                                                 |
+
+
+| Layer         | Technology                                                   |
+| ------------- | ------------------------------------------------------------ |
 | Frontend      | React Native 0.85.3 + Expo SDK 56                            |
 | Backend       | Firebase (Firestore + Auth + Hosting)                        |
 | Navigation    | React Navigation 7 (native stack)                            |

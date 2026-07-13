@@ -208,7 +208,7 @@ npm run web          # Expo dev server (local)
 npm run web:wsl      # Expo dev server (WSL2 → Windows browser)
 npm run build:web    # Build static web export to dist/ + inject PWA meta
 npm run serve:dist   # Serve built dist/ on localhost:3000 (PWA testing)
-npm test             # Run Jest (176 tests)
+npm test             # Run Jest (185 tests)
 npm run test:coverage # Jest + coverage report
 npx tsc --noEmit     # TypeScript type-check
 npx expo start       # Expo dev server (all platforms)
@@ -225,3 +225,14 @@ npx expo start       # Expo dev server (all platforms)
 - `code_review/SKILL.md` — Pre-land code review using context7 for API validation
 - `documentation/SKILL.md` — Doc generation using context7 for API references
 - `frontend-design` (plugin) — Scoped as `pisilist:frontend-design`
+
+## Recently Completed (2026-07-13)
+
+### Tech Stack Audit
+- ✅ Investigated actual tech stack from package.json, imports, config files
+- ✅ Compared actual vs documented tech stack across README.md, CLAUDE.md, wiki/*
+- ✅ Fixed CLAUDE.md test count: "22 tests, 4 suites" → "185 tests, 18 suites"
+- ✅ Fixed wiki/state.md test count: "176 tests" → "185 tests"
+- ✅ Fixed wiki/code_flowchart.md service test count: "108" → "118" (added notificationSync: 10)
+- ✅ Updated README.md Tech Stack table: added React 19, react-native-web, AsyncStorage, datetimepicker, PWA
+- ✅ Created slides/tech-stack.md — 10-slide Marp deck for project tech stack presentation
